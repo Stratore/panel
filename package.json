@@ -12,10 +12,10 @@
   },
   "scripts": {
     "prepare": "lefthook install",
-    "lint": "eslint . && prettier --check .",
+    "lint": "eslint . --max-warnings 0 && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc -b && tsc -p tsconfig.test.json",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "build": "pnpm -r --if-present build"

@@ -1,0 +1,855 @@
+{
+  "version": 1,
+  "categories": {
+    "ai": [
+      {
+        "term": "llm",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "chatgpt",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "openai",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "anthropic",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "claude",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "gemini",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "mistral ai",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "llama",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "deepseek",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "ollama",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "hugging face",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "artificial intelligence",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "machine learning",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "neural network",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "language model",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "generative ai",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "ai model",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "ai agent",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "deep learning",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "inference",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "intelligence artificielle",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "apprentissage automatique",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "modèle de langage",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "ia générative",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "réseau de neurones",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "ai",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "ia",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "gpt",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "transformer",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "diffusion",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "chatbot",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "copilot",
+        "weight": 1,
+        "lang": "any"
+      }
+    ],
+    "cyber": [
+      {
+        "term": "cve",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "zero day",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "0day",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "ransomware",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "malware",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "cisa kev",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "exploit",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "vulnerability",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "phishing",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "botnet",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "apt",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "data breach",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "security flaw",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "patch tuesday",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "backdoor",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "threat actor",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "remote code execution",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "privilege escalation",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "hackers",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "cyberattack",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "faille",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "vulnérabilité",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "rançongiciel",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "fuite de données",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "cyberattaque",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "piratage",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "logiciel malveillant",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "hameçonnage",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "cert fr",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "anssi",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "security",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "sécurité",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "attack",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "attaque",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "breach",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "leak",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "fuite",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "spyware",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "infostealer",
+        "weight": 1,
+        "lang": "any"
+      }
+    ],
+    "innovation": [
+      {
+        "term": "quantum",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "spacex",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "nasa",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "fusion",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "robotics",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "robotique",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "startup",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "electric vehicle",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "self driving",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "space",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "research",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "breakthrough",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "battery",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "biotech",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "climate",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "recherche",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "véhicule électrique",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "espace",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "batterie",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "découverte",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "innovation",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "science",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "drone",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "satellite",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "5g",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "6g",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "ev",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "tesla",
+        "weight": 1,
+        "lang": "any"
+      }
+    ],
+    "dev": [
+      {
+        "term": "javascript",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "typescript",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "rust",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "python",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "golang",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "kubernetes",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "docker",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "github",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "gitlab",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "postgresql",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "linux",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "open source",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "programming",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "developer",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "framework",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "release",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "compiler",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "database",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "cloud",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "devops",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "api",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "développeur",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "développement",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "logiciel libre",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "programmation",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "base de données",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "code",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "npm",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "node js",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "java",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "php",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "sql",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "git",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "aws",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "azure",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "vim",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "emacs",
+        "weight": 1,
+        "lang": "any"
+      }
+    ],
+    "hardware": [
+      {
+        "term": "nvidia",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "amd",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "intel",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "tsmc",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "qualcomm",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "arm",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "risc v",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "raspberry pi",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "gpu",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "cpu",
+        "weight": 3,
+        "lang": "any"
+      },
+      {
+        "term": "chip",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "semiconductor",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "processor",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "graphics card",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "motherboard",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "laptop",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "smartphone",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "ssd",
+        "weight": 2,
+        "lang": "en"
+      },
+      {
+        "term": "puce",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "processeur",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "carte graphique",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "semi conducteur",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "carte mère",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "ordinateur portable",
+        "weight": 2,
+        "lang": "fr"
+      },
+      {
+        "term": "ram",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "ddr5",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "pcie",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "usb",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "benchmark",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "iphone",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "pixel",
+        "weight": 1,
+        "lang": "any"
+      },
+      {
+        "term": "galaxy",
+        "weight": 1,
+        "lang": "any"
+      }
+    ]
+  }
+}

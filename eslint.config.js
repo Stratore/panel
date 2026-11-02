@@ -49,6 +49,8 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
+      // Flags every bracket access, including literal-union keys; see ADR-009.
+      'security/detect-object-injection': 'off',
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
@@ -104,6 +106,14 @@ export default tseslint.config(
     rules: {
       'no-restricted-globals': 'off',
       'no-restricted-imports': 'off',
+    },
+  },
+
+  // Tests load fixtures from computed paths.
+  {
+    files: ['**/*.test.ts'],
+    rules: {
+      'security/detect-non-literal-fs-filename': 'off',
     },
   },
 

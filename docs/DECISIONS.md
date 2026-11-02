@@ -73,3 +73,22 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 - **Context:** The spec targets a Raspberry Pi. The owner's home lab runs Docker Compose on a headless Debian server (recycled laptop) plus two Raspberry Pis, with Tailscale as a subnet router and Caddy using an internal CA.
 - **Decision:** Keep multi-arch images (amd64 + arm64) so Panel runs on either; the reference deployment is the Debian server, with Caddy's internal CA as the default TLS mode.
 - **Consequences:** Phase 9 is validated on amd64 (Debian) and, when possible, arm64 (Pi).
+
+## ADR-009 — `security/detect-object-injection` disabled; zero lint warnings
+
+- **Date:** 2026-11-02
+- **Context:** The rule flags every bracket access, including keys typed as literal unions (`Category`, `Lang`). It produced only false positives in Phase 1, and noise hides real findings.
+- **Decision:** Disable it. Lookups keyed by external data use `Object.hasOwn` before indexing (see `cvss.ts`, `cwe.ts`), which is covered by tests with `__proto__`/`constructor` keys. `pnpm lint` now runs with `--max-warnings 0`, so every remaining security rule fails the build. `detect-non-literal-fs-filename` is off in `*.test.ts` only (fixture loading).
+- **Consequences:** Prototype-pollution safety relies on typing plus explicit own-property checks, reviewed in code.
+
+## ADR-010 — URL canonicalization keeps the path's case
+
+- **Date:** 2026-11-02
+- **Context:** SPEC § 7.2 says "lowercase" for canonical URLs. Paths are case-sensitive (RFC 3986): lowercasing them would merge distinct articles (YouTube ids, GitHub paths, short-link slugs).
+- **Decision:** Lowercase scheme and host only (what `URL` already does). Tracking parameters, fragment and trailing slash are removed as specified.
+- **Consequences:** Rare duplicates differing only by path case are not merged by `url_hash`; title clustering still groups them.
+
+## ADR-011 — Zod 4 in `packages/shared`
+
+- **Date:** 2026-11-02
+- **Decision:** `zod@4.6.7` (exact). Required by the spec, zero runtime dependencies, actively maintained. Schemas are `strictObject` so unknown keys (e.g. smuggled HTML or secrets) are rejected; URLs are limited to credential-free http(s) with a domain name.
