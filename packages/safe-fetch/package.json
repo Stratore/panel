@@ -1,0 +1,18 @@
+{
+  "name": "@panel/safe-fetch",
+  "version": "0.0.0",
+  "private": true,
+  "description": "SSRF-safe HTTP client, safe XML parser and HTML-to-text sanitizer.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}

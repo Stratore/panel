@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Panel — Journal</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Newsreader:opsz,wght@6..72,500;6..72,600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+.jr *{box-sizing:border-box}
+.jr button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:left}
+.jr button:focus-visible,.jr a:focus-visible{outline:2px solid #2E5BFF;outline-offset:2px;border-radius:8px}
+.serif{font-family:'Newsreader',Georgia,serif;font-optical-sizing:auto}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.box{animation:rise .8s cubic-bezier(.2,.8,.2,1) both;transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .45s}
+.box:hover{transform:translateY(-3px);box-shadow:0 18px 40px -18px rgba(0,0,0,.22)}
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}.d4{animation-delay:.2s}.d5{animation-delay:.25s}.d6{animation-delay:.3s}
+.slide{transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+.dot{transition:width .4s cubic-bezier(.2,.8,.2,1),background .3s}
+.ticker{display:flex;width:max-content;animation:tick 70s linear infinite}
+.tickwrap:hover .ticker{animation-play-state:paused}
+.wire{animation:wire 48s linear infinite}
+.wirewrap:hover .wire{animation-play-state:paused}
+.paused .ticker,.paused .wire{animation-play-state:paused}
+.live{animation:live 1.6s ease-in-out infinite}
+.hl{background-image:linear-gradient(currentColor,currentColor);background-size:0 1px;background-repeat:no-repeat;background-position:0 100%;transition:background-size .4s}
+.hl:hover{background-size:100% 1px}
+.wrow{transition:background .2s}
+.wrow:hover{background:var(--hover)}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes wire{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@keyframes live{0%,100%{opacity:1}50%{opacity:.3}}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.r2{grid-row:span 2}
+@media (max-width:1080px){.s4{grid-column:span 6}.s6,.s8{grid-column:span 12}.r2{grid-row:auto}}
+@media (max-width:640px){.s4{grid-column:span 12}.hide-sm{display:none !important}}
+@media (prefers-reduced-motion:reduce){.box,.ticker,.wire,.live{animation:none !important}.slide,.dot,.box{transition:none !important}}
+</style>
+</helmet>
+<div class="jr {{rootClass}}" style="min-height: 100vh; background: {{t.bg}}; color: {{t.text}}; font-family: 'Hanken Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased; --hover: {{t.hover}}; transition: background .5s, color .5s">
+
+<div class="tickwrap" style="background: {{t.inv}}; color: {{t.invText}}; height: 44px; display: flex; align-items: center; overflow: hidden">
+<div style="flex: none; display: flex; align-items: center; gap: 8px; padding: 0 16px 0 24px; height: 100%; font-size: 12px; font-weight: 700; letter-spacing: .1em; background: {{t.inv}}; position: relative; z-index: 1">
+<span class="live" style="width: 7px; height: 7px; border-radius: 50%; background: #E5484D"></span>LIVE
+</div>
+<div style="overflow: hidden; flex: 1; min-width: 0" aria-label="Live headlines" role="marquee">
+<div class="ticker">
+<sc-for list="{{ticker}}" as="tk" hint-placeholder-count="8">
+<span style="display: inline-flex; align-items: center; gap: 10px; padding: 0 22px; font-size: 14px; white-space: nowrap; border-left: 1px solid {{t.invLine}}">
+<span class="mono" style="font-size: 11px; font-weight: 500; letter-spacing: .06em; color: {{tk.color}}">{{tk.cat}}</span>{{tk.text}}
+</span>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div style="max-width: 1320px; margin: 0 auto; padding: 20px 40px 56px">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+<div style="display: flex; align-items: center; gap: 28px; flex-wrap: wrap">
+<a href="#" style="display: flex; align-items: center; gap: 10px">
+<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="{{t.text}}"></rect><rect x="6" y="6" width="7" height="16" rx="2" fill="{{t.bg}}"></rect><rect x="15" y="6" width="7" height="7" rx="2" fill="{{t.bg}}"></rect><rect x="15" y="15" width="7" height="7" rx="2" fill="#2E5BFF"></rect></svg>
+<span style="font-size: 19px; font-weight: 700; letter-spacing: -0.02em">Panel</span>
+</a>
+<nav aria-label="Sections" style="display: flex; gap: 2px; padding: 4px; border-radius: 999px; background: {{t.seg}}; flex-wrap: wrap">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="5">
+<a href="{{n.href}}" style="padding: 8px 15px; border-radius: 999px; font-size: 14px; font-weight: 500; background: {{n.bg}}; color: {{n.fg}}; box-shadow: {{n.sh}}">{{n.label}}</a>
+</sc-for>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<button onClick="{{togglePause}}" aria-pressed="{{paused}}" style="height: 40px; padding: 0 14px; border-radius: 12px; background: {{t.seg}}; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px">
+<sc-if value="{{paused}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5v14l12-7z"></path></svg></sc-if>
+<sc-if value="{{playing}}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg></sc-if>
+{{pauseLabel}}
+</button>
+<button onClick="{{toggleTheme}}" aria-label="Toggle theme" style="width: 40px; height: 40px; border-radius: 12px; background: {{t.seg}}; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+</button>
+</div>
+</header>
+
+<section style="margin: 40px 0 22px; border-top: 2px solid {{t.text}}; border-bottom: 1px solid {{t.border2}}; padding: 18px 0 16px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 16px">
+<div class="mono hide-sm" style="font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: {{t.sub}}; line-height: 1.7">Monday 2 November 2026<br>Edition № 214 · Arles</div>
+<h1 class="serif" style="margin: 0; font-size: 64px; line-height: 1; font-weight: 600; letter-spacing: -0.025em; text-align: center">The Daily Brief</h1>
+<div class="mono hide-sm" style="font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: {{t.sub}}; line-height: 1.7; text-align: right">Updated 21:14<br><span style="border: 1px dashed {{t.border2}}; padding: 1px 6px; border-radius: 6px">Demo data</span></div>
+</section>
+
+<div role="group" aria-label="Filter by topic" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px">
+<sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
+<button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; background: {{c.bg}}; color: {{c.fg}}; border: 1px solid {{c.bd}}; transition: background .2s, color .2s">
+<span style="width: 7px; height: 7px; border-radius: 50%; background: {{c.dot}}"></span>{{c.label}}
+</button>
+</sc-for>
+</div>
+
+<div class="grid">
+
+<article class="box s8 d1" style="background: {{t.card}}; border: 1px solid {{t.border}}; border-radius: 26px; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr)">
+<div style="position: relative; min-height: 380px">
+<sc-for list="{{hero}}" as="h" hint-placeholder-count="4">
+<div class="slide" aria-hidden="{{h.hidden}}" style="position: absolute; inset: 0; padding: 30px 32px; display: flex; flex-direction: column; gap: 14px; opacity: {{h.op}}; transform: {{h.tf}}; pointer-events: {{h.pe}}">
+<span class="mono" style="font-size: 11.5px; font-weight: 500; letter-spacing: .1em; color: {{h.color}}">FRONT PAGE · {{h.cat}}</span>
+<a href="#" class="serif" style="font-size: 38px; line-height: 1.08; font-weight: 600; letter-spacing: -0.02em"><span class="hl">{{h.title}}</span></a>
+<p style="margin: 0; font-size: 16.5px; line-height: 1.5; color: {{t.sub}}">{{h.stand}}</p>
+<span style="margin-top: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: {{t.sub}}"><span style="font-weight: 600; color: {{t.text}}">{{h.src}}</span><span class="mono" style="font-size: 10.5px; padding: 1px 5px; border-radius: 5px; border: 1px solid {{t.border2}}">{{h.lang}}</span>{{h.time}}</span>
+</div>
+</sc-for>
+</div>
+<div style="background: {{heroTint}}; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 22px; transition: background .7s">
+<svg viewBox="0 0 220 220" style="width: 100%; height: auto; max-height: 290px" aria-hidden="true">
+<sc-for list="{{pattern}}" as="pt" hint-placeholder-count="64">
+<circle cx="{{pt.x}}" cy="{{pt.y}}" r="{{pt.r}}" fill="{{heroColor}}" opacity="{{pt.o}}" style="transition: r .9s, opacity .9s, fill .7s"></circle>
+</sc-for>
+</svg>
+<div style="display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; gap: 6px" role="group" aria-label="Front page stories">
+<sc-for list="{{heroDots}}" as="hd" hint-placeholder-count="4">
+<button class="dot" onClick="{{hd.pick}}" aria-label="{{hd.aria}}" style="width: {{hd.w}}; height: 8px; border-radius: 8px; background: {{hd.bg}}; min-height: 8px"></button>
+</sc-for>
+</div>
+<span class="mono" style="font-size: 12px; color: {{t.text}}">{{heroPos}}</span>
+</div>
+</div>
+</article>
+
+<section class="box s4 r2 d2" aria-labelledby="wire" style="background: {{t.card}}; border: 1px solid {{t.border}}; border-radius: 26px; padding: 22px 0 0; display: flex; flex-direction: column; min-height: 0">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 0 22px 12px; border-bottom: 1px solid {{t.border}}">
+<h2 id="wire" style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px"><span class="live" style="width: 7px; height: 7px; border-radius: 50%; background: #E5484D"></span>Live wire</h2>
+<span style="font-size: 12.5px; color: {{t.sub}}">{{wireCount}} today · hover to pause</span>
+</div>
+<div class="wirewrap" style="position: relative; overflow: hidden; height: 760px; -webkit-mask-image: linear-gradient(transparent, #000 6%, #000 90%, transparent); mask-image: linear-gradient(transparent, #000 6%, #000 90%, transparent)">
+<div class="wire">
+<sc-for list="{{wire}}" as="w" hint-placeholder-count="10">
+<a href="#" class="wrow" style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 12px; padding: 14px 22px; border-bottom: 1px solid {{t.border}}">
+<span class="mono" style="font-size: 12px; color: {{t.sub}}; padding-top: 2px">{{w.time}}</span>
+<span style="display: flex; flex-direction: column; gap: 4px">
+<span class="mono" style="font-size: 10.5px; font-weight: 500; letter-spacing: .08em; color: {{w.color}}">{{w.cat}}</span>
+<span style="font-size: 14.5px; font-weight: 500; line-height: 1.4">{{w.text}}</span>
+</span>
+</a>
+</sc-for>
+</div>
+</div>
+</section>
+
+<sc-for list="{{boxes}}" as="b" hint-placeholder-count="5">
+<section class="box s4 {{b.delay}}" style="background: {{t.card}}; border: 1px solid {{t.border}}; border-radius: 26px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h2 style="margin: 0; display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase"><span style="width: 9px; height: 9px; border-radius: 3px; background: {{b.dot}}"></span><span style="color: {{b.color}}">{{b.name}}</span></h2>
+<span class="mono" style="font-size: 12px; color: {{t.sub}}">{{b.pos}}</span>
+</div>
+<div style="position: relative; height: 150px">
+<sc-for list="{{b.items}}" as="it" hint-placeholder-count="4">
+<a href="#" class="slide" aria-hidden="{{it.hidden}}" style="position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px; opacity: {{it.op}}; transform: {{it.tf}}; pointer-events: {{it.pe}}">
+<span class="serif" style="font-size: 23px; line-height: 1.18; font-weight: 600; letter-spacing: -0.012em"><span class="hl">{{it.title}}</span></span>
+<span style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: {{t.sub}}"><span style="font-weight: 600; color: {{t.text}}">{{it.src}}</span><span class="mono" style="font-size: 10.5px; padding: 1px 5px; border-radius: 5px; border: 1px solid {{t.border2}}">{{it.lang}}</span>{{it.time}}</span>
+</a>
+</sc-for>
+</div>
+<div style="display: flex; gap: 6px; margin-top: auto" role="group" aria-label="{{b.aria}}">
+<sc-for list="{{b.dots}}" as="dt" hint-placeholder-count="4">
+<button class="dot" onClick="{{dt.pick}}" aria-label="{{dt.aria}}" style="width: {{dt.w}}; height: 6px; border-radius: 6px; background: {{dt.bg}}"></button>
+</sc-for>
+</div>
+</section>
+</sc-for>
+
+<section class="box s6 d5" aria-labelledby="sixty" style="background: {{t.inv}}; color: {{t.invText}}; border-radius: 26px; padding: 26px 28px">
+<h2 id="sixty" class="serif" style="margin: 0 0 16px; font-size: 28px; font-weight: 600; letter-spacing: -0.015em">In 60 seconds</h2>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{sixty}}" as="x" hint-placeholder-count="5">
+<li style="display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; font-size: 15.5px; line-height: 1.45">
+<span class="mono" style="font-size: 12px; opacity: .6; padding-top: 3px">{{x.n}}</span>
+<span><span class="mono" style="font-size: 11px; letter-spacing: .06em; color: {{x.color}}; margin-right: 8px">{{x.cat}}</span>{{x.text}}</span>
+</li>
+</sc-for>
+</ol>
+</section>
+
+<section class="box s6 d6" aria-labelledby="snap" style="background: {{t.card}}; border: 1px solid {{t.border}}; border-radius: 26px; padding: 26px 28px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 id="snap" style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Threat snapshot</h2>
+<a href="Main.dc.html" style="font-size: 14px; font-weight: 500; color: #2E5BFF">Open the Brief →</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{snap}}" as="sn" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 16px; background: {{t.subtle}}">
+<span style="font-size: 32px; font-weight: 600; letter-spacing: -0.04em; font-variant-numeric: tabular-nums">{{sn.v}}</span>
+<span style="font-size: 12.5px; color: {{t.sub}}; display: flex; align-items: center; gap: 6px"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{sn.c}}"></span>{{sn.l}}</span>
+</div>
+</sc-for>
+</div>
+<a href="#" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-radius: 16px; border: 1px solid {{t.border}}">
+<span style="display: flex; flex-direction: column; gap: 3px"><span class="mono" style="font-size: 12px; color: {{t.sub}}">CVE-2026-41234 · KEV</span><span style="font-size: 15px; font-weight: 600">PHP · Remote code execution · patch to 8.3.14</span></span>
+<span class="mono" style="font-size: 12.5px; font-weight: 500; padding: 3px 9px; border-radius: 8px; background: {{t.critBg}}; color: {{t.critFg}}">9.8</span>
+</a>
+</section>
+
+</div>
+
+<footer style="margin-top: 40px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: 13px; color: {{t.sub}}">
+<span>Panel · The Daily Brief — headlines link to the original article</span>
+<span>RSS · Hacker News · GitHub · NVD · CISA KEV · HIBP (CC BY 4.0) · CERT-FR</span>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { dark: null, k: 0, paused: false, cat: 'All', off: {}, heroOff: 0 };
+  }
+  componentDidMount() {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { this.setState({ paused: true }); }
+    var self = this;
+    this.iv = setInterval(function () { if (!self.state.paused) self.setState({ k: self.state.k + 1 }); }, 4500);
+  }
+  componentWillUnmount() { clearInterval(this.iv); }
+  renderVals() {
+    var s = this.state, self = this;
+    var dark = s.dark === null ? !!this.props.dark : s.dark;
+    var t = dark ? {
+      bg: '#0C0D10', card: '#16171B', text: '#F4F4F6', sub: '#9C9CA6', border: 'rgba(255,255,255,0.07)', border2: 'rgba(255,255,255,0.22)',
+      seg: 'rgba(255,255,255,0.07)', segOn: '#2A2B31', hover: 'rgba(255,255,255,0.05)', subtle: 'rgba(255,255,255,0.05)', track: 'rgba(255,255,255,0.14)',
+      inv: '#F4F4F6', invText: '#0C0D10', invLine: 'rgba(0,0,0,0.12)', critBg: 'rgba(229,72,77,0.16)', critFg: '#FF9592', shadow: '0 1px 2px rgba(0,0,0,.4)'
+    } : {
+      bg: '#F5F5F7', card: '#FFFFFF', text: '#1D1D1F', sub: '#6E6E73', border: 'rgba(0,0,0,0.06)', border2: 'rgba(0,0,0,0.2)',
+      seg: 'rgba(0,0,0,0.05)', segOn: '#FFFFFF', hover: 'rgba(0,0,0,0.03)', subtle: '#F5F5F7', track: 'rgba(0,0,0,0.12)',
+      inv: '#1D1D1F', invText: '#F5F5F7', invLine: 'rgba(255,255,255,0.14)', critBg: '#FDECEC', critFg: '#B42318', shadow: '0 1px 3px rgba(0,0,0,.12)'
+    };
+    // category palette: dot = mid tone, text = contrast-safe tone for the current ground
+    var C = {
+      'AI':          { dot: '#7C66DC', txt: dark ? '#B9A9FF' : '#5B45B8', tint: dark ? 'rgba(124,102,220,0.14)' : '#F1EEFC', inv: dark ? '#5B45B8' : '#B9A9FF' },
+      'Cyber':       { dot: '#E5484D', txt: dark ? '#FF9592' : '#B42318', tint: dark ? 'rgba(229,72,77,0.13)' : '#FDEEEE', inv: dark ? '#B42318' : '#FF9592' },
+      'Innovation':  { dot: '#12A594', txt: dark ? '#5DD9C8' : '#0B7065', tint: dark ? 'rgba(18,165,148,0.13)' : '#E8F7F5', inv: dark ? '#0B7065' : '#5DD9C8' },
+      'Dev & IT':    { dot: '#2E5BFF', txt: dark ? '#A9BBFF' : '#2440C4', tint: dark ? 'rgba(46,91,255,0.14)' : '#EDF1FF', inv: dark ? '#2440C4' : '#A9BBFF' },
+      'Hardware':    { dot: '#E38A13', txt: dark ? '#FFC07A' : '#9A4D00', tint: dark ? 'rgba(227,138,19,0.13)' : '#FDF3E6', inv: dark ? '#9A4D00' : '#FFC07A' }
+    };
+    var names = ['AI', 'Cyber', 'Innovation', 'Dev & IT', 'Hardware'];
+
+    var segOn = function (on) { return on ? { bg: t.segOn, fg: t.text, sh: t.shadow } : { bg: 'transparent', fg: t.sub, sh: 'none' }; };
+    var nav = [['Journal', '#'], ['Brief', 'Main.dc.html'], ['Threats', '#'], ['Breaches', '#'], ['Releases', '#']].map(function (n, i) {
+      var st = segOn(i === 0); return { label: n[0], href: n[1], bg: st.bg, fg: st.fg, sh: st.sh };
+    });
+
+    var cats = ['All'].concat(names).map(function (n) {
+      var on = s.cat === n;
+      return { label: n, on: on, dot: n === 'All' ? t.text : C[n].dot,
+        bg: on ? t.text : t.card, fg: on ? t.bg : t.text, bd: on ? t.text : t.border2,
+        pick: function () { self.setState({ cat: n }); } };
+    });
+
+    var tickRaw = [
+      ['Cyber', 'CVE-2026-41234 (PHP) added to CISA KEV — patch to 8.3.14'],
+      ['AI', 'A 3B open model now runs fully offline on a Raspberry Pi 5'],
+      ['Dev & IT', 'Python 3.14.1 released with free-threading fixes'],
+      ['Innovation', 'First production line for solid-state battery cells announced'],
+      ['Cyber', 'Northwind Retail breach: 12.4M accounts exposed (HIBP)'],
+      ['Hardware', 'RISC-V laptops: three new models announced this week'],
+      ['AI', 'Researchers hijack an email assistant with one crafted message'],
+      ['Dev & IT', 'Docker Engine 29.0.3 fixes a container escape']
+    ];
+    var tk = tickRaw.map(function (x) { return { cat: x[0].toUpperCase(), color: C[x[0]].inv, text: x[1] }; });
+    var ticker = tk.concat(tk);
+
+    var heroRaw = [
+      ['AI', 'Small open models now summarise the news offline on an €80 board', 'New benchmarks show 3-billion-parameter models running at usable speeds on a Raspberry Pi 5 — no cloud, no API key, no data leaving the house.', 'Ars Technica', 'EN', '2h'],
+      ['Cyber', 'PHP ships an emergency release as attackers target its multipart parser', 'CVE-2026-41234 joined the CISA catalogue of exploited flaws hours after disclosure. Fixed versions: 8.3.14 and 8.2.27.', 'BleepingComputer', 'EN', '1h'],
+      ['Innovation', 'Solid-state batteries leave the lab for a first production line', 'Denser, safer cells move from pilot to production. The first devices to use them are expected next year.', 'IEEE Spectrum', 'EN', '5h'],
+      ['Dev & IT', 'La fin du mot de passe ? Les passkeys deviennent la norme en entreprise', 'Gestionnaires d’identité, navigateurs et systèmes : où en est le déploiement, et ce qu’il change pour les équipes IT.', 'Next', 'FR', '6h']
+    ];
+    var hn = heroRaw.length;
+    var hi = ((Math.floor(s.k / 2) + s.heroOff) % hn + hn) % hn;
+    var slide = function (i, cur) {
+      var on = i === cur;
+      return { op: on ? 1 : 0, tf: on ? 'none' : (i < cur ? 'translateY(-14px)' : 'translateY(14px)'), pe: on ? 'auto' : 'none', hidden: on ? 'false' : 'true' };
+    };
+    var hero = heroRaw.map(function (h, i) {
+      var sl = slide(i, hi);
+      return { cat: h[0].toUpperCase(), color: C[h[0]].txt, title: h[1], stand: h[2], src: h[3], lang: h[4], time: h[5], op: sl.op, tf: sl.tf, pe: sl.pe, hidden: sl.hidden };
+    });
+    var hc = C[heroRaw[hi][0]];
+    var heroDots = heroRaw.map(function (h, i) {
+      return { w: i === hi ? '26px' : '8px', bg: i === hi ? t.text : t.track, aria: 'Show story ' + (i + 1),
+        pick: function () { var base = Math.floor(s.k / 2); self.setState({ heroOff: i - base }); } };
+    });
+    // generative dot pattern, reshaped by the active story
+    var pattern = [];
+    for (var y = 0; y < 8; y++) {
+      for (var x = 0; x < 8; x++) {
+        var v = Math.sin((x + 1) * (hi + 1.3) * 0.7) * Math.cos((y + 1) * (hi + 0.6) * 0.55);
+        var a = (v + 1) / 2;
+        pattern.push({ x: 18 + x * 26.3, y: 18 + y * 26.3, r: (3 + a * 8).toFixed(1), o: (0.25 + a * 0.75).toFixed(2) });
+      }
+    }
+
+    var boxRaw = {
+      'AI': [
+        ['Un modèle open-weight prend la tête d’un benchmark multilingue', 'Next', 'FR', '1h'],
+        ['Why on-device inference is the next laptop battleground', 'The Verge', 'EN', '3h'],
+        ['Prompt injection: an email assistant hijacked by a single message', 'The Register', 'EN', '4h'],
+        ['AI Act : ce qui change pour les développeurs cette année', 'Le Monde Informatique', 'FR', '7h']
+      ],
+      'Cyber': [
+        ['OpenSSH 9.x: authentication bypass, no patch yet', 'CERT-FR', 'FR', '2h'],
+        ['Northwind Retail confirms 12.4M accounts exposed', 'Have I Been Pwned', 'EN', '3h'],
+        ['Phishing kit abuses QR codes to slip past MFA', 'BleepingComputer', 'EN', '5h'],
+        ['Linux kernel privilege escalation exploited in the wild', 'The Hacker News', 'EN', '7h']
+      ],
+      'Innovation': [
+        ['Wi-Fi 8 draft trades raw speed for reliability', 'Ars Technica', 'EN', '2h'],
+        ['Une start-up française grave des puces photoniques à Grenoble', 'L’Usine Nouvelle', 'FR', '4h'],
+        ['Quantum error correction crosses a new threshold', 'Nature News', 'EN', '6h'],
+        ['A repairable modular tablet reaches mass production', 'The Verge', 'EN', '9h']
+      ],
+      'Dev & IT': [
+        ['Show HN: a 40 MB Linux distro that boots in under a second', 'Hacker News · 812 pts', 'EN', '4h'],
+        ['Python 3.14.1 lands with free-threading improvements', 'Python Insider', 'EN', '6h'],
+        ['TypeScript tops the GitHub language ranking again', 'GitHub Blog', 'EN', '8h'],
+        ['Kubernetes : la gestion des secrets enfin simplifiée', 'Korben', 'FR', '10h']
+      ],
+      'Hardware': [
+        ['On a testé l’AI HAT+ 2 du Raspberry Pi', 'Korben', 'FR', '3h'],
+        ['RISC-V laptops: the late-2026 lineup compared', 'Tom’s Hardware', 'EN', '5h'],
+        ['DDR6 sampling begins at two memory makers', 'Tom’s Hardware', 'EN', '8h'],
+        ['Les écrans e-ink couleur arrivent sur les moniteurs', 'Les Numériques', 'FR', '11h']
+      ]
+    };
+    var visible = s.cat === 'All' ? names : [s.cat];
+    var boxes = visible.map(function (n, bi) {
+      var list = boxRaw[n];
+      var m = list.length;
+      var off = s.off[n] || 0;
+      var cur = ((s.k + bi + off) % m + m) % m;
+      return {
+        name: n, color: C[n].txt, dot: C[n].dot, delay: 'd' + ((bi % 4) + 3), pos: (cur + 1) + ' / ' + m, aria: n + ' headlines',
+        items: list.map(function (h, i) { var sl = slide(i, cur); return { title: h[0], src: h[1], lang: h[2], time: h[3], op: sl.op, tf: sl.tf, pe: sl.pe, hidden: sl.hidden }; }),
+        dots: list.map(function (h, i) {
+          return { w: i === cur ? '22px' : '6px', bg: i === cur ? C[n].dot : t.track, aria: n + ' headline ' + (i + 1),
+            pick: function () { var o = Object.assign({}, s.off); o[n] = i - (s.k + bi); self.setState({ off: o }); } };
+        })
+      };
+    });
+
+    var wireRaw = [
+      ['21:12', 'Cyber', 'CISA adds CVE-2026-41234 (PHP) to the KEV catalogue'],
+      ['21:04', 'Dev & IT', 'GitHub: new repo “kev-watch” gains 890 stars today'],
+      ['20:51', 'AI', 'Open-weight 3B model published under Apache 2.0'],
+      ['20:37', 'Hardware', 'Raspberry Pi OS update ships a new kernel'],
+      ['20:20', 'Cyber', 'CERT-FR: avis de sécurité sur OpenSSH'],
+      ['19:58', 'Innovation', 'EU funds three new chip pilot lines'],
+      ['19:41', 'Dev & IT', 'Node.js 24.11.1 security release'],
+      ['19:30', 'AI', 'Benchmark: local models on ARM boards, round-up'],
+      ['19:12', 'Cyber', 'HIBP adds Northwind Retail (12.4M accounts)'],
+      ['18:55', 'Dev & IT', 'Docker Engine 29.0.3 fixes a container escape'],
+      ['18:40', 'Innovation', 'Wi-Fi 8 draft published'],
+      ['18:22', 'Hardware', 'RISC-V laptop lineup announced']
+    ];
+    var wireF = wireRaw.filter(function (w) { return s.cat === 'All' || w[1] === s.cat; });
+    var wireOne = wireF.map(function (w) { return { time: w[0], cat: w[1].toUpperCase(), color: C[w[1]].txt, text: w[2] }; });
+    var wire = wireOne.concat(wireOne);
+
+    var sixty = [
+      ['Cyber', 'Patch PHP now: a critical RCE is being exploited. Fixed in 8.3.14.'],
+      ['Cyber', 'OpenSSH 9.0–9.8: auth bypass, no patch yet — apply the mitigation.'],
+      ['AI', 'Small local models are now usable on a Raspberry Pi 5 for batch jobs.'],
+      ['Dev & IT', 'Docker 29.0.3 and Node 24.11.1 are security releases.'],
+      ['Innovation', 'Solid-state batteries move to a first production line.']
+    ].map(function (x, i) { return { n: '0' + (i + 1), cat: x[0].toUpperCase(), color: C[x[0]].inv, text: x[1] }; });
+
+    return {
+      t: t, nav: nav, cats: cats, ticker: ticker, hero: hero, heroDots: heroDots, heroPos: (hi + 1) + ' / ' + hn,
+      heroTint: hc.tint, heroColor: hc.dot, pattern: pattern, boxes: boxes, wire: wire, wireCount: wireRaw.length,
+      sixty: sixty,
+      snap: [{ v: 214, l: 'New CVEs', c: '#2E5BFF' }, { v: 9, l: 'Critical', c: '#E5484D' }, { v: 2, l: 'Exploited', c: '#F76B15' }, { v: 5, l: 'Watchlist', c: t.text }],
+      paused: s.paused, playing: !s.paused, pauseLabel: s.paused ? 'Resume' : 'Pause',
+      rootClass: s.paused ? 'paused' : '',
+      togglePause: function () { self.setState({ paused: !s.paused }); },
+      toggleTheme: function () { self.setState({ dark: !dark }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

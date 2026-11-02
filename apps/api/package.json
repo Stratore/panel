@@ -1,0 +1,14 @@
+{
+  "name": "@panel/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Fastify API: auth, REST and SSE.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@panel/shared": "workspace:*"
+  }
+}

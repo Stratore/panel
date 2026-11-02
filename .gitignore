@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+coverage/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local data
+data/
+backups/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Playwright
+test-results/
+playwright-report/
+
+# Design mockup runtime (third-party, not part of the design values)
+docs/design-reference/vendor/
+docs/design-reference/support.js
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

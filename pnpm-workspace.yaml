@@ -1,0 +1,16 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Supply chain: only install versions published at least 3 days ago.
+minimumReleaseAge: 4320
+
+# Lifecycle scripts are denied unless explicitly reviewed here (strictDepBuilds is on by default).
+allowBuilds:
+  better-sqlite3: true
+  '@node-rs/argon2': true
+  esbuild: true
+  # Hooks are installed by the root "prepare" script instead of a dependency postinstall.
+  lefthook: false
+
+engineStrict: true
