@@ -21,6 +21,7 @@ export default defineConfig({
       // SPEC § 9.7: ≥ 80 % on shared, safe-fetch and the collector pipeline.
       thresholds: {
         'packages/shared/src/**': { lines: 80, functions: 80, branches: 80, statements: 80 },
+        'packages/safe-fetch/src/**': { lines: 80, functions: 80, branches: 80, statements: 80 },
       },
     },
   },

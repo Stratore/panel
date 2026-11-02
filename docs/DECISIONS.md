@@ -120,3 +120,32 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 - **Date:** 2026-11-03
 - **Context:** Vitest projects do not inherit the root `resolve.conditions`, so cross-package imports silently resolved to stale `dist/` builds.
 - **Decision:** One root config including `{apps,packages}/*/src/**/*.test.ts`, with the `source` condition for both client and SSR resolution.
+
+## ADR-016 — safe-fetch dependencies
+
+- **Date:** 2026-11-03
+- **Decision:** `undici@8.12.3` (0 deps; needed for a per-request `Agent` whose DNS lookup is pinned to the validated address), `ipaddr.js@2.5.0` (0 deps), `fast-xml-parser@5.11.2` (6 small deps, same maintainer), `sanitize-html@2.18.1` (pulls `htmlparser2` and `postcss`; mandated by the spec, the most audited HTML sanitizer for Node). Only `packages/safe-fetch` may import `undici` or `node:http(s)` (ESLint).
+
+## ADR-017 — Strict XML validation with `XMLValidator`
+
+- **Date:** 2026-11-03
+- **Context:** `fast-xml-parser`'s parser is lenient (it accepts truncated documents). Its `XMLValidator` export is deprecated in favour of a separate `fast-xml-validator` package, which adds another transitive dependency.
+- **Decision:** Keep the bundled `XMLValidator` (one justified lint suppression). Order of checks: size → `<!DOCTYPE`/`<!ENTITY` refusal → well-formedness → parse with `processEntities: false` and `maxNestedTags: 64`, all values kept as strings.
+- **Consequences:** Revisit when `XMLValidator` is removed upstream (Dependabot will surface it).
+
+## ADR-018 — safeFetch behaviour beyond the spec
+
+- **Date:** 2026-11-03
+- **Decision:**
+  - The default trust level is `custom` (strictest); built-in sources opt into `default`.
+  - Caller-supplied size and time limits can only lower the caps, never raise them.
+  - Credentials (`apiKey`, `Authorization`, any non-allowlisted header) are dropped when a redirect leaves the original origin.
+  - IPv6 prefixes that embed IPv4 (NAT64 `64:ff9b::/96`, 6to4 `2002::/16`, Teredo) and documentation ranges are blocked too; only `unicast` addresses outside every listed range pass.
+  - Extra ranges (e.g. a custom Docker network) come from `SAFE_FETCH_BLOCKED_CIDRS`.
+  - Feed text goes through `toPlainText`: one-level entity decoding, tag stripping, removal of control, zero-width and bidi-override characters, truncation on code points.
+
+## ADR-019 — "Trojan Source" guard
+
+- **Date:** 2026-11-03
+- **Context:** While writing Phase 3, escape sequences for invisible characters were turned into the literal characters by the editing tooling, which is exactly how bidi/zero-width tricks hide in code.
+- **Decision:** A test (`packages/shared/src/source-hygiene.test.ts`) fails if any source, config or workflow file contains a literal control, zero-width, bidi-override or BOM character. Such characters must be written as `\u` escapes.

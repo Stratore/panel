@@ -42,3 +42,14 @@ Pure, dependency-light domain logic (Zod only), usable from Node and the browser
 | `retention.ts` | Daily purge (30 d items, 365 d non-KEV CVEs, 7 d runs, 90 d alerts), weekly FTS optimize + `VACUUM` |
 | `backup.ts`    | Online backup through SQLite's backup API, 7 copies kept                                            |
 | `drizzle/`     | Generated SQL migrations + `0001_fts.sql` (FTS5 external-content table and triggers)                |
+
+## `packages/safe-fetch`
+
+| Module      | Content                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| `fetch.ts`  | `safeFetch` (production) and `createSafeFetch(deps)` (test seam: resolver, address policy, ports) |
+| `ip.ts`     | `isPublicAddress`, extra blocked CIDRs                                                            |
+| `url.ts`    | Static URL policy, re-applied on each redirect                                                    |
+| `xml.ts`    | `parseXmlSafe`                                                                                    |
+| `text.ts`   | `decodeXmlEntities`, `htmlToText`, `cleanText`, `toPlainText`                                     |
+| `errors.ts` | `SafeFetchError` with a typed `code` per refused check                                            |
