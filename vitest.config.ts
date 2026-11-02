@@ -1,11 +1,18 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Workspace packages resolve to src/ (see ADR-005), so tests never depend on a prior build.
   resolve: {
     conditions: ['source'],
   },
+  ssr: {
+    resolve: {
+      conditions: ['source'],
+      externalConditions: ['source'],
+    },
+  },
   test: {
-    projects: ['packages/*', 'apps/*'],
+    include: ['{apps,packages}/*/src/**/*.test.ts'],
     passWithNoTests: true,
     coverage: {
       provider: 'v8',

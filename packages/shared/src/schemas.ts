@@ -172,3 +172,54 @@ export const keywordsConfigSchema = z.strictObject({
   }),
 });
 export type KeywordsConfig = z.infer<typeof keywordsConfigSchema>;
+
+export const SOURCE_ADAPTERS = [
+  'cisa-kev',
+  'nvd',
+  'epss',
+  'ghsa',
+  'hibp',
+  'hn',
+  'lobsters',
+  'devto',
+  'gh-trending',
+  'rss',
+] as const;
+export const SOURCE_GROUPS = ['security', 'tech', 'releases', 'custom'] as const;
+
+/** Five-field cron expression; each field limited to cron characters. Parsed by croner later. */
+const CRON_FIELD = /^[\d*/,-]{1,20}$/;
+const cronSchema = z
+  .string()
+  .max(104)
+  .refine((value) => {
+    const fields = value.split(' ');
+    return fields.length === 5 && fields.every((field) => CRON_FIELD.test(field));
+  }, 'Expected a five-field cron expression');
+
+/** One entry of config/sources.default.json, or a user-added source. */
+export const sourceDefinitionSchema = z.strictObject({
+  id: z.string().regex(/^[a-z0-9-]{2,40}$/),
+  name: z.string().trim().min(1).max(60),
+  group: z.enum(SOURCE_GROUPS),
+  kind: itemKindSchema,
+  adapter: z.enum(SOURCE_ADAPTERS),
+  url: httpUrlSchema,
+  lang: langSchema,
+  category: categorySchema.nullable(),
+  schedule: cronSchema,
+  weight: z.number().min(0.1).max(3),
+  enabled: z.boolean(),
+  /** Release feeds only: product name shown in the UI. */
+  product: z.string().trim().min(1).max(40).optional(),
+});
+export type SourceDefinition = z.infer<typeof sourceDefinitionSchema>;
+
+export const sourcesCatalogSchema = z.strictObject({
+  version: z.literal(1),
+  sources: z
+    .array(sourceDefinitionSchema)
+    .max(200)
+    .refine((sources) => new Set(sources.map((s) => s.id)).size === sources.length, 'Duplicate id'),
+});
+export type SourcesCatalog = z.infer<typeof sourcesCatalogSchema>;

@@ -31,3 +31,14 @@ Pure, dependency-light domain logic (Zod only), usable from Node and the browser
 | `cvss.ts`, `cwe.ts`, `templates.ts` | CVSS v3.x/v4.0 decoding, CWE names, EN/FR CVE summaries                            |
 | `watchlist.ts`                      | Default watchlist, CPE and keyword matching                                        |
 | `summarizer.ts`                     | AI extension point (`NoneSummarizer` only)                                         |
+
+## `packages/db`
+
+| Module         | Content                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| `schema.ts`    | Drizzle tables (SPEC § 7.4)                                                                         |
+| `client.ts`    | `openDatabase` (WAL, foreign keys, busy timeout, mode 600), `migrateDatabase`                       |
+| `seed.ts`      | Catalog loading (`config/sources.default.json`, Zod-validated) and idempotent seed                  |
+| `retention.ts` | Daily purge (30 d items, 365 d non-KEV CVEs, 7 d runs, 90 d alerts), weekly FTS optimize + `VACUUM` |
+| `backup.ts`    | Online backup through SQLite's backup API, 7 copies kept                                            |
+| `drizzle/`     | Generated SQL migrations + `0001_fts.sql` (FTS5 external-content table and triggers)                |

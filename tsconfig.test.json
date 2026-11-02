@@ -8,5 +8,10 @@
     "lib": ["es2024", "dom", "dom.iterable"],
     "types": ["node"]
   },
-  "include": ["apps/*/src/**/*.test.ts", "packages/*/src/**/*.test.ts", "vitest.config.ts"]
+  "include": [
+    "apps/*/src/**/*.test.ts",
+    "packages/*/src/**/*.test.ts",
+    "vitest.config.ts",
+    "packages/*/drizzle.config.ts"
+  ]
 }

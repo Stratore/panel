@@ -92,3 +92,31 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 
 - **Date:** 2026-11-02
 - **Decision:** `zod@4.6.7` (exact). Required by the spec, zero runtime dependencies, actively maintained. Schemas are `strictObject` so unknown keys (e.g. smuggled HTML or secrets) are rejected; URLs are limited to credential-free http(s) with a domain name.
+
+## ADR-012 — Database dependencies
+
+- **Date:** 2026-11-03
+- **Decision:** `drizzle-orm@0.45.4` and `better-sqlite3@13.0.3` (runtime, required by the spec; `better-sqlite3` ships Node 26 prebuilds and is compiled with FTS5), `drizzle-kit@0.31.11` and `@types/better-sqlite3` (dev only, to generate migrations). `drizzle-kit` brings `esbuild` and `tsx`; they never reach the runtime images.
+- **Consequences:** Migrations are versioned SQL in `packages/db/drizzle/`. The FTS5 table and its sync triggers live in a hand-written migration (`0001_fts.sql`) because Drizzle does not model virtual tables.
+
+## ADR-013 — Source URLs that changed since the spec
+
+- **Date:** 2026-11-03
+- **Context:** Every catalog URL was checked on 2026-11-02 (all answered 200).
+- **Decision:**
+  - CERT-FR moved from `cert.ssi.gouv.fr` to `cert.cyber.gouv.fr` (the old host redirects): new URLs are used directly.
+  - Python Insider moved off Blogger: `https://blog.python.org/rss.xml` (the old Blogger feed URL now returns `application/octet-stream`, which `safeFetch` rejects).
+  - Tom's Hardware redirects to `https://www.tomshardware.com/feeds.xml`: the final URL is used.
+  - The Register's Atom URL now redirects to an RSS endpoint on `api.theregister.com`; the stable public URL is kept and the generic adapter handles both formats.
+  - GitHub Advisories: one source per ecosystem (`ghsa-composer`, `ghsa-npm`, `ghsa-pip`).
+
+## ADR-014 — Storage conventions
+
+- **Date:** 2026-11-03
+- **Decision:** Timestamps are integer milliseconds (Drizzle `timestamp_ms`), calendar dates (breach date, star history day) are `YYYY-MM-DD` text. `sessions.id` stores the SHA-256 of the session token, never the token itself. `alerts_sent` is unique on `(dedupe_key, channel)` so a failure on one channel does not block the other. The seed is idempotent: catalog fields are refreshed on every start, but the user's `enabled` toggle, custom sources, edited watchlist and prefs are never overwritten.
+
+## ADR-015 — Single Vitest configuration
+
+- **Date:** 2026-11-03
+- **Context:** Vitest projects do not inherit the root `resolve.conditions`, so cross-package imports silently resolved to stale `dist/` builds.
+- **Decision:** One root config including `{apps,packages}/*/src/**/*.test.ts`, with the `source` condition for both client and SSR resolution.

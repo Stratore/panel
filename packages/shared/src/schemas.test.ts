@@ -4,6 +4,8 @@ import {
   httpUrlSchema,
   normalizedItemSchema,
   prefsSchema,
+  sourceDefinitionSchema,
+  sourcesCatalogSchema,
   type ArticleItem,
 } from './schemas.js';
 import { NoneSummarizer } from './summarizer.js';
@@ -128,5 +130,41 @@ describe('prefsSchema', () => {
 describe('NoneSummarizer', () => {
   it('never summarizes', async () => {
     await expect(new NoneSummarizer().summarize()).resolves.toBeNull();
+  });
+});
+
+describe('sourceDefinitionSchema', () => {
+  const base = {
+    id: 'example',
+    name: 'Example',
+    group: 'tech',
+    kind: 'article',
+    adapter: 'rss',
+    url: 'https://example.com/feed',
+    lang: 'en',
+    category: 'dev',
+    schedule: '*/30 * * * *',
+    weight: 1,
+    enabled: true,
+  };
+
+  it('accepts five-field cron schedules', () => {
+    expect(sourceDefinitionSchema.safeParse(base).success).toBe(true);
+    expect(sourceDefinitionSchema.safeParse({ ...base, schedule: '0 6 * * 1-5' }).success).toBe(
+      true,
+    );
+  });
+
+  it.each(['* * * *', '* * * * * *', '@hourly', '0 6 * * ; rm', ''])(
+    'rejects schedule %j',
+    (schedule) => {
+      expect(sourceDefinitionSchema.safeParse({ ...base, schedule }).success).toBe(false);
+    },
+  );
+
+  it('rejects duplicate ids in a catalog', () => {
+    expect(sourcesCatalogSchema.safeParse({ version: 1, sources: [base, base] }).success).toBe(
+      false,
+    );
   });
 });

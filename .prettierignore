@@ -3,3 +3,4 @@ dist/
 coverage/
 docs/design-reference/
 docs/SPEC.md
+packages/db/drizzle/meta/
