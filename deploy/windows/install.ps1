@@ -38,6 +38,8 @@ $backupDirWsl = (& wsl.exe -d $Distro -- wslpath -a ($backupDir -replace '\\', '
 $utf8Bom = New-Object Text.UTF8Encoding $true
 $launcher = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'panel.ps1')).TrimStart([char]0xFEFF)
 [IO.File]::WriteAllText((Join-Path $target 'panel.ps1'), $launcher, $utf8Bom)
+$trust = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'trust-certificate.ps1')).TrimStart([char]0xFEFF)
+[IO.File]::WriteAllText((Join-Path $target 'trust-certificate.ps1'), $trust, $utf8Bom)
 [ordered]@{
   distro       = $Distro
   deployDir    = $DeployDir
@@ -107,11 +109,11 @@ $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powersh
 $startMenu = Join-Path ([Environment]::GetFolderPath('Programs')) 'Panel'
 New-Item -ItemType Directory -Force -Path $startMenu | Out-Null
 
-function New-Shortcut([string]$path, [string]$arguments, [string]$description) {
+function New-Shortcut([string]$path, [string]$arguments, [string]$description, [string]$script = 'panel.ps1') {
   $link = $shell.CreateShortcut($path)
   $link.TargetPath = $powershell
   # Bypass applies to this process only; the system execution policy is unchanged.
-  $link.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$target\panel.ps1`" $arguments".Trim()
+  $link.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$target\$script`" $arguments".Trim()
   $link.WorkingDirectory = $target
   $link.IconLocation = "$iconPath,0"
   $link.Description = $description
@@ -125,4 +127,5 @@ New-Shortcut (Join-Path $startMenu 'Panel.lnk') '' 'Démarrer Panel et l''ouvrir
 New-Shortcut (Join-Path $startMenu 'Arrêter Panel.lnk') '-Stop' 'Arrêter Panel'
 New-Shortcut (Join-Path $startMenu 'Mettre à jour Panel.lnk') '-Update' 'Mettre à jour Panel depuis GitHub'
 New-Shortcut (Join-Path $startMenu 'Sauvegarder Panel.lnk') '-Backup' 'Sauvegarder la base de Panel dans Documents'
-Say 'Raccourcis créés : bureau et menu Démarrer (Panel, Arrêter, Mettre à jour, Sauvegarder).'
+New-Shortcut (Join-Path $startMenu 'Panel - Certificat.lnk') '' 'Faire confiance au certificat local de Panel (supprime l''avertissement du navigateur)' 'trust-certificate.ps1'
+Say 'Raccourcis créés : bureau et menu Démarrer (Panel, Arrêter, Mettre à jour, Sauvegarder, Certificat).'
