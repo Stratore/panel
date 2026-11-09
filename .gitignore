@@ -35,3 +35,9 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# TypeScript declaration output of the web app (Vite owns dist/)
+.tsbuild/
+
+# Local preview launcher (machine-specific paths)
+.claude/launch.json

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_PREFS,
   httpUrlSchema,
   normalizedItemSchema,
   prefsSchema,
@@ -8,6 +7,7 @@ import {
   sourcesCatalogSchema,
   type ArticleItem,
 } from './schemas.js';
+import { DEFAULT_PREFS } from './defaults.js';
 import { NoneSummarizer } from './summarizer.js';
 
 const article: ArticleItem = {

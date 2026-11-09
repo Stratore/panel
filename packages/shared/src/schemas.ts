@@ -184,24 +184,6 @@ export const prefsSchema = z.strictObject({
 });
 export type Prefs = z.infer<typeof prefsSchema>;
 
-export const DEFAULT_PREFS: Prefs = {
-  theme: 'system',
-  lang: 'en',
-  density: 'comfortable',
-  reduceMotion: false,
-  displayName: '',
-  lastVisitAt: null,
-  alerts: {
-    cvss: 9,
-    epss: 0.5,
-    breachAccounts: 1_000_000,
-    hnPoints: 500,
-    maxPerHour: 5,
-    quietHours: { start: '23:00', end: '07:00' },
-    digestAt: '08:00',
-  },
-};
-
 const keywordTermSchema = z.strictObject({
   term: z.string().trim().min(2).max(60),
   weight: z.number().min(0.1).max(5),

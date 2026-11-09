@@ -13,6 +13,8 @@ pnpm install
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
+Run locally (three terminals): `pnpm --filter @panel/collector collect:once` fills the database, `SESSION_SECRET=… node apps/api/dist/server.js` starts the API on port 3000, and `pnpm --filter @panel/web dev` serves the interface on port 5173 (or `preview` on 4173 with the production security headers).
+
 ## License
 
 [MIT](LICENSE)

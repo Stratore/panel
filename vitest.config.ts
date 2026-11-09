@@ -14,6 +14,8 @@ export default defineConfig({
   test: {
     include: ['{apps,packages}/*/src/**/*.test.ts'],
     passWithNoTests: true,
+    // Argon2id hashing in many parallel API tests can be slow on CI runners.
+    testTimeout: 20_000,
     coverage: {
       provider: 'v8',
       include: ['packages/*/src/**', 'apps/*/src/**'],

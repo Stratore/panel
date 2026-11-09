@@ -213,3 +213,23 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 - **Date:** 2026-11-09
 - **Decision:** `/api/stream` polls `events` every 2 s (indexed read), resumes from `Last-Event-ID`, sends a heartbeat every 25 s, re-validates the session on each heartbeat and caps concurrent streams at 10. Frames are `JSON.stringify`-ed, so payload newlines cannot inject events.
 - **Test alerts:** `/api/alerts/test` is wired to an `AlertSender` interface; Phase 8 provides the Discord/Telegram implementation (until then it answers 409 when no channel is configured).
+
+## ADR-030 — One Trusted Types policy, for the Service Worker only
+
+- **Date:** 2026-11-09
+- **Context:** SPEC § 9.2 asks for `require-trusted-types-for 'script'; trusted-types 'none'` and SPEC § 10 for a Service Worker. `navigator.serviceWorker.register()` is a Trusted Types sink (it needs a `TrustedScriptURL`), and `'none'` forbids creating any policy, so both cannot hold at once.
+- **Decision:** `trusted-types panel`: exactly one policy may exist, created once in `main.ts`, whose `createScriptURL` only returns the constant `/sw.js` and throws otherwise. No `createHTML` or `createScript` exists, so every HTML and script sink stays blocked. The CSP is defined once in `packages/shared/src/csp.ts` and reused by the API (helmet), the Vite preview server and Caddy.
+- **Verified:** in Chromium with the production headers, zero `securitypolicyviolation` events across all routes, theme and pause toggles, while a deliberate `insertAdjacentHTML` throws a `TypeError`.
+
+## ADR-031 — Front-end foundations
+
+- **Date:** 2026-11-09
+- **Decision:**
+  - Custom Elements use light DOM: one global stylesheet with design tokens, no per-component shadow styles to keep in sync with the CSP.
+  - `h()` is the only DOM builder: text nodes only, no inline handlers or `style` attributes, URL attributes limited to same-site paths and http(s).
+  - The API client imports the shared contract as types only, so no Zod code ships to the browser (initial JS: 9.5 KB gzipped, budget 60 KB). `DEFAULT_PREFS` moved to a Zod-free module for the same reason, and `@panel/shared` declares `sideEffects: false`.
+  - Fonts: `@font-face` rules written by hand for the latin subsets only (Hanken Grotesk 400–700, IBM Plex Mono 400/500, Newsreader variable with the optical-size axis); a 30-line Vite plugin injects `<link rel=preload>` for Hanken 500/600 once hashed names are known. Assets are never inlined as `data:` URIs (`font-src 'self'`).
+  - The web app has its own test tsconfig (`moduleResolution: bundler`, Vite types); its declaration output goes to `.tsbuild/` so Vite owns `dist/`.
+  - Dark theme: `html[data-theme]` forces a theme, otherwise `prefers-color-scheme` applies; a test keeps both dark blocks identical and checks every text/background token pair at 4.5:1 in both themes.
+  - Touch targets grow to 44 px on coarse pointers and phones; the desktop keeps the mockup's 40 px controls.
+  - Preferences are cached in LocalStorage (versioned, size-capped) to avoid a theme or language flash; logout clears it and the Service Worker caches.

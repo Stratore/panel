@@ -5,10 +5,15 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "rootDir": "src",
-    "outDir": "dist",
-    "types": []
+    "outDir": ".tsbuild",
+    "types": ["vite/client"],
+    "emitDeclarationOnly": true
   },
-  "include": ["src"],
+  "include": ["src", "src/**/*.json"],
   "exclude": ["src/**/*.test.ts"],
-  "references": [{ "path": "../../packages/shared" }]
+  "references": [
+    {
+      "path": "../../packages/shared"
+    }
+  ]
 }

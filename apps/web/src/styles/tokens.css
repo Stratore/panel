@@ -1,0 +1,159 @@
+/* Design tokens (SPEC § 4.2). Light by default; dark follows the system unless the user forces
+   a theme (html[data-theme]). Contrast pairs are checked by tokens.test.ts. */
+
+:root {
+  color-scheme: light;
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --text: #1d1d1f;
+  --sub: #6e6e73;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.2);
+  --seg: rgba(0, 0, 0, 0.05);
+  --seg-on: #ffffff;
+  --hover: rgba(0, 0, 0, 0.035);
+  --track: rgba(0, 0, 0, 0.07);
+  --subtle: #f5f5f7;
+  --accent: #2e5bff;
+  --accent-bg: #edf1ff;
+  --accent-fg: #2440c4;
+  --inv: #1d1d1f;
+  --inv-text: #f5f5f7;
+  --inv-sub: #a1a1a6;
+  --shadow-seg: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-hover: 0 18px 40px -18px rgba(0, 0, 0, 0.22);
+  --scrim: rgba(12, 13, 16, 0.32);
+
+  /* Severity: dots and bars identical in both themes, text and tints per theme. */
+  --sev-critical: #e5484d;
+  --sev-critical-bg: #fdecec;
+  --sev-critical-fg: #b42318;
+  --sev-high: #f76b15;
+  --sev-high-bg: #fff1e6;
+  --sev-high-fg: #b54708;
+  --sev-medium: #c79a00;
+  --sev-medium-fg: #946f00;
+  --sev-low: #8e8e93;
+  --sev-low-fg: var(--sub);
+  --ok: #30a46c;
+  --ok-fg: #1e7f4f;
+
+  /* Journal sections: dot / text / tint. */
+  --cat-ai: #7c66dc;
+  --cat-ai-fg: #5b45b8;
+  --cat-ai-bg: #f1eefc;
+  --cat-cyber: #e5484d;
+  --cat-cyber-fg: #b42318;
+  --cat-cyber-bg: #fdeeee;
+  --cat-innovation: #12a594;
+  --cat-innovation-fg: #0b7065;
+  --cat-innovation-bg: #e8f7f5;
+  --cat-dev: #2e5bff;
+  --cat-dev-fg: #2440c4;
+  --cat-dev-bg: #edf1ff;
+  --cat-hardware: #e38a13;
+  --cat-hardware-fg: #9a4d00;
+  --cat-hardware-bg: #fdf3e6;
+
+  /* Type */
+  --font-ui: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+
+  /* Shape and space */
+  --radius-box: 24px;
+  --radius-drawer: 28px;
+  --radius-field: 12px;
+  --radius-pill: 999px;
+  --gap: 20px;
+  --gutter: 40px;
+  --container: 1320px;
+  --touch: 44px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-drawer: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --ease-spring: cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0c0d10;
+    --card: #16171b;
+    --text: #f4f4f6;
+    --sub: #9c9ca6;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.22);
+    --seg: rgba(255, 255, 255, 0.07);
+    --seg-on: #2a2b31;
+    --hover: rgba(255, 255, 255, 0.05);
+    --track: rgba(255, 255, 255, 0.09);
+    --subtle: rgba(255, 255, 255, 0.05);
+    --accent: #5b7cff;
+    --accent-bg: rgba(91, 124, 255, 0.16);
+    --accent-fg: #a9bbff;
+    --inv: #f4f4f6;
+    --inv-text: #0c0d10;
+    --inv-sub: #5d5d66;
+    --shadow-seg: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-hover: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+    --scrim: rgba(0, 0, 0, 0.55);
+    --sev-critical-bg: rgba(229, 72, 77, 0.16);
+    --sev-critical-fg: #ff9592;
+    --sev-high-bg: rgba(247, 107, 21, 0.16);
+    --sev-high-fg: #ffa266;
+    --sev-medium-fg: #ffc53d;
+    --ok-fg: #4cc38a;
+    --cat-ai-fg: #b9a9ff;
+    --cat-ai-bg: rgba(124, 102, 220, 0.16);
+    --cat-cyber-fg: #ff9592;
+    --cat-cyber-bg: rgba(229, 72, 77, 0.16);
+    --cat-innovation-fg: #5dd9c8;
+    --cat-innovation-bg: rgba(18, 165, 148, 0.16);
+    --cat-dev-fg: #a9bbff;
+    --cat-dev-bg: rgba(46, 91, 255, 0.18);
+    --cat-hardware-fg: #ffc07a;
+    --cat-hardware-bg: rgba(227, 138, 19, 0.16);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0c0d10;
+  --card: #16171b;
+  --text: #f4f4f6;
+  --sub: #9c9ca6;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --seg: rgba(255, 255, 255, 0.07);
+  --seg-on: #2a2b31;
+  --hover: rgba(255, 255, 255, 0.05);
+  --track: rgba(255, 255, 255, 0.09);
+  --subtle: rgba(255, 255, 255, 0.05);
+  --accent: #5b7cff;
+  --accent-bg: rgba(91, 124, 255, 0.16);
+  --accent-fg: #a9bbff;
+  --inv: #f4f4f6;
+  --inv-text: #0c0d10;
+  --inv-sub: #5d5d66;
+  --shadow-seg: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --sev-critical-bg: rgba(229, 72, 77, 0.16);
+  --sev-critical-fg: #ff9592;
+  --sev-high-bg: rgba(247, 107, 21, 0.16);
+  --sev-high-fg: #ffa266;
+  --sev-medium-fg: #ffc53d;
+  --ok-fg: #4cc38a;
+  --cat-ai-fg: #b9a9ff;
+  --cat-ai-bg: rgba(124, 102, 220, 0.16);
+  --cat-cyber-fg: #ff9592;
+  --cat-cyber-bg: rgba(229, 72, 77, 0.16);
+  --cat-innovation-fg: #5dd9c8;
+  --cat-innovation-bg: rgba(18, 165, 148, 0.16);
+  --cat-dev-fg: #a9bbff;
+  --cat-dev-bg: rgba(46, 91, 255, 0.18);
+  --cat-hardware-fg: #ffc07a;
+  --cat-hardware-bg: rgba(227, 138, 19, 0.16);
+}

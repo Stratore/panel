@@ -26,6 +26,7 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      '**/.tsbuild/**',
       '**/coverage/**',
       '**/node_modules/**',
       'docs/design-reference/**',
@@ -42,7 +43,12 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         // Package tsconfigs exclude tests from the build; tsconfig.test.json covers them.
-        project: ['./packages/*/tsconfig.json', './apps/*/tsconfig.json', './tsconfig.test.json'],
+        project: [
+          './packages/*/tsconfig.json',
+          './apps/*/tsconfig.json',
+          './tsconfig.test.json',
+          './apps/web/tsconfig.test.json',
+        ],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -107,6 +113,19 @@ export default tseslint.config(
       'no-restricted-globals': 'off',
       'no-restricted-imports': 'off',
     },
+  },
+
+  // Front-end: only the typed API client talks to the (same-origin) API.
+  {
+    files: ['apps/web/src/lib/api.ts'],
+    rules: { 'no-restricted-globals': 'off' },
+  },
+
+  // The service worker proxies same-origin GET requests only.
+  {
+    files: ['apps/web/public/sw.js'],
+    languageOptions: { globals: globals.serviceworker },
+    rules: { 'no-restricted-globals': 'off' },
   },
 
   // Tests load fixtures from computed paths and assert on detached mock methods.

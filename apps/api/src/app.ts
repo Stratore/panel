@@ -4,6 +4,7 @@ import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { PanelDb } from '@panel/db';
 import type { SafeFetch } from '@panel/safe-fetch';
+import { CSP_DIRECTIVES } from '@panel/shared';
 import {
   defaultAuthDelay,
   LoginThrottle,
@@ -31,24 +32,10 @@ export interface AppDeps {
   authDelay?: (ms: number) => Promise<void>;
 }
 
-/** Content-Security-Policy of SPEC § 9.2 (also served by Caddy for the front-end). */
-const CSP = {
-  defaultSrc: ["'self'"],
-  scriptSrc: ["'self'"],
-  styleSrc: ["'self'"],
-  imgSrc: ["'self'", 'data:'],
-  fontSrc: ["'self'"],
-  connectSrc: ["'self'"],
-  manifestSrc: ["'self'"],
-  workerSrc: ["'self'"],
-  frameAncestors: ["'none'"],
-  baseUri: ["'none'"],
-  formAction: ["'self'"],
-  objectSrc: ["'none'"],
-  upgradeInsecureRequests: [],
-  requireTrustedTypesFor: ["'script'"],
-  trustedTypes: ["'none'"],
-};
+/** CSP of SPEC § 9.2, shared with Vite and Caddy (helmet wants mutable arrays). */
+const CSP = Object.fromEntries(
+  Object.entries(CSP_DIRECTIVES).map(([name, values]) => [name, [...values]]),
+);
 
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const now = deps.now ?? (() => new Date());

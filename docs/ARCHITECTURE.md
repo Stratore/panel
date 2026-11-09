@@ -78,3 +78,19 @@ Pure, dependency-light domain logic (Zod only), usable from Node and the browser
 | `routes/stream.ts`  | `/stream` (SSE tail of the `events` table)                                                             |
 | `feeds.ts`          | Check-by-check feed validation for "Test feed"                                                         |
 | `server.ts`         | Boot: config, migrations, first-launch setup token in the logs                                         |
+
+## `apps/web`
+
+| Module                         | Content                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `lib/h.ts`                     | DOM helper (the only way to create elements)                                                                        |
+| `lib/router.ts`                | History API router, link interception, route table of SPEC § 10                                                     |
+| `lib/store.ts`, `lib/state.ts` | Observable stores: session, prefs (LocalStorage-cached), pause, online                                              |
+| `lib/api.ts`                   | Typed client, CSRF header, 401 handling (the only `fetch` caller)                                                   |
+| `lib/sse.ts`                   | `EventSource` with fallback to 2-minute polling                                                                     |
+| `lib/i18n.ts`, `i18n/*.json`   | EN/FR catalogs, `Intl` date, relative time and number formatting                                                    |
+| `lib/theme.ts`                 | Theme and motion (pause, reduced motion)                                                                            |
+| `components/`                  | `pn-app-shell` (route guard, layout), `pn-header`, `pn-tabbar`, `pn-offline-banner`, icons, skeletons, empty states |
+| `pages/`                       | Login, setup (strength meter), placeholders until Phase 7, 404                                                      |
+| `styles/`                      | Tokens (light/dark, severity, sections), self-hosted fonts, base and shell styles                                   |
+| `public/`                      | Manifest, icons, hand-written Service Worker                                                                        |
