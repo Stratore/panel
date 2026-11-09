@@ -37,9 +37,19 @@ function Stop-WithError([string]$text) {
 
 # Runs scripts/local.sh inside WSL as root (Docker), from the deployment folder.
 function Invoke-Local([string[]]$arguments) {
-  $output = & wsl.exe -d $distro -u root --cd $deployDir -- bash scripts/local.sh @arguments 2>&1
+  # Docker Compose writes its progress to stderr. In Windows PowerShell, redirected stderr lines
+  # become error records, which 'Stop' would turn into a failure: only the exit code counts.
+  $previous = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    $output = & wsl.exe -d $distro -u root --cd $deployDir -- bash scripts/local.sh @arguments 2>&1 |
+      ForEach-Object { "$_" }
+    $code = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previous
+  }
   $text = ($output | Out-String).Trim()
-  if ($LASTEXITCODE -ne 0) { throw $text }
+  if ($code -ne 0) { throw $text }
   return $text
 }
 
@@ -49,8 +59,9 @@ function Start-KeepAlive {
   $running = Get-CimInstance Win32_Process -Filter "Name='wsl.exe'" |
     Where-Object { $_.CommandLine -like "*$keepAliveTag*" }
   if (-not $running) {
-    Start-Process -FilePath 'wsl.exe' -WindowStyle Hidden -ArgumentList @(
-      '-d', $distro, '--exec', 'bash', '-c', "exec -a $keepAliveTag sleep infinity")
+    # One string: Start-Process joins an argument array with spaces and loses the quotes.
+    Start-Process -FilePath 'wsl.exe' -WindowStyle Hidden -ArgumentList (
+      "-d $distro --exec bash -c `"exec -a $keepAliveTag sleep infinity`"")
   }
 }
 
