@@ -140,15 +140,20 @@ export function refreshPriorities(
       .all();
     for (const row of rows) {
       const text = [row.product, row.kevName, row.descriptionEn].filter(Boolean).join(' ');
+      const labels = matchWatchlist(watchlist, { text, cpes: row.cpesJson });
       const priority = cvePriority({
         cvss: row.cvss,
         ghsaSeverity: row.ghsaSeverity,
         epssPercentile: row.epssPercentile,
         kev: row.kev,
-        watchlistMatch: matchWatchlist(watchlist, { text, cpes: row.cpesJson }).length > 0,
+        watchlistMatch: labels.length > 0,
       });
-      if (priority !== row.priority) {
-        db.update(cves).set({ priority }).where(eq(cves.cveId, row.cveId)).run();
+      const labelsChanged = labels.join('\n') !== row.watchlistJson.join('\n');
+      if (priority !== row.priority || labelsChanged) {
+        db.update(cves)
+          .set({ priority, watchlistJson: labels })
+          .where(eq(cves.cveId, row.cveId))
+          .run();
       }
     }
   }
@@ -171,4 +176,20 @@ export function cveIdsNeedingEpss(db: PanelDb, now: Date, limit: number): string
     .limit(limit)
     .all()
     .map((row) => row.cveId);
+}
+
+/**
+ * Recomputes every CVE's priority and watchlist labels. Run at boot and daily, so edits to
+ * the watchlist (made through the API) and schema upgrades reach all records.
+ */
+export function refreshAllPriorities(db: PanelDb, watchlist: readonly WatchlistEntry[]): number {
+  const ids = db
+    .select({ cveId: cves.cveId })
+    .from(cves)
+    .all()
+    .map((row) => row.cveId);
+  db.transaction((tx) => {
+    refreshPriorities(tx, ids, watchlist);
+  });
+  return ids.length;
 }

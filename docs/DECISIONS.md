@@ -180,3 +180,36 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 
 - **Date:** 2026-11-09
 - **Decision:** `croner` (0 deps, cron scheduling, imposed by the spec), `pino` (the logger Fastify uses; secrets redacted by path), plus `zod` and `drizzle-orm` at the same exact versions as the packages that already use them.
+
+## ADR-025 — API dependencies and validation style
+
+- **Date:** 2026-11-09
+- **Decision:** `fastify`, `@fastify/helmet`, `@fastify/rate-limit`, `@fastify/cookie` (all imposed by the spec) and `@node-rs/argon2` (prebuilt Argon2id, no install script). No Zod type-provider plugin: routes call a small `parseInput(schema, …)` helper for input and `sendJson(reply, schema, …)` for output, so every response is validated before it leaves (a mismatch is logged and answered with a generic 500). The HTTP contract lives in `packages/shared/src/api.ts` for the web client to reuse.
+- **Note:** `@node-rs/argon2` exports `Algorithm` as a `const enum`, unusable under `verbatimModuleSyntax`; the numeric value (2 = Argon2id) is used with a comment.
+
+## ADR-026 — Sessions, setup token and CSRF
+
+- **Date:** 2026-11-09
+- **Decision:**
+  - The `__Host-panel_sid` cookie (HttpOnly, Secure, SameSite=Strict, Path=/, 30 days) carries 32 random bytes; the database stores `HMAC-SHA256(SESSION_SECRET, token)`, so a leaked database cannot be replayed. Sliding expiry renews at most hourly. Logging in rotates the session.
+  - Failed logins: generic message, 5 attempts per 15 min per IP (rate limit) plus an exponential delay (250 ms doubling, at most 4 s).
+  - `/api/auth/setup` only works while no user exists, requires the one-time `SETUP_TOKEN` (generated and printed in the API logs when not provided), compared in constant time, and re-checks inside a transaction against concurrent setups.
+  - CSRF: every non-GET request must carry `X-Panel-CSRF: 1` (impossible cross-site without CORS, which is disabled) and, when present, an `Origin` equal to `PANEL_PUBLIC_URL` (or the request host).
+  - The user-agent hash is stored for auditing but not enforced: browser updates change it and would log the user out.
+
+## ADR-027 — Read-time ranking, cursors and search
+
+- **Date:** 2026-11-09
+- **Decision:** Article rank is recomputed on read (freshness decay is time-dependent). Items use keyset cursors (`publishedAt`, `id`); CVE, breach and release lists use opaque offset cursors. Search turns free text into a quoted-terms FTS5 query (letters and digits only, last term as prefix) and uses escaped `LIKE` for CVEs, repositories and releases; operators, column filters and wildcards typed by the user are inert.
+- **CVE scope:** bare CVE ids extracted from articles (no NVD, KEV or GHSA data) are hidden from lists. Matching watchlist labels are stored on each CVE (`watchlist_json`) so filters run in SQL; the collector recomputes them at boot and daily so watchlist edits propagate.
+
+## ADR-028 — Custom sources are HTTPS-only at the schema level too
+
+- **Date:** 2026-11-09
+- **Decision:** `POST /api/sources` and `/api/import` reject non-HTTPS URLs in the Zod schema (400), on top of safeFetch's custom policy. Adding a source re-runs the full feed validation server-side; the client's earlier "Test feed" is never trusted. Imports skip known URLs and respect the 100-source cap.
+
+## ADR-029 — SSE through the events table
+
+- **Date:** 2026-11-09
+- **Decision:** `/api/stream` polls `events` every 2 s (indexed read), resumes from `Last-Event-ID`, sends a heartbeat every 25 s, re-validates the session on each heartbeat and caps concurrent streams at 10. Frames are `JSON.stringify`-ed, so payload newlines cannot inject events.
+- **Test alerts:** `/api/alerts/test` is wired to an `AlertSender` interface; Phase 8 provides the Discord/Telegram implementation (until then it answers 409 when no channel is configured).

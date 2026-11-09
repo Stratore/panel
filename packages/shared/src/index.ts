@@ -12,3 +12,5 @@ export * from './cwe.js';
 export * from './templates.js';
 export * from './summarizer.js';
 export * from './watchlist.js';
+export * from './api.js';
+export * from './sixty.js';

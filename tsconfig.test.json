@@ -12,6 +12,7 @@
     "apps/*/src/**/*.test.ts",
     "packages/*/src/**/*.test.ts",
     "vitest.config.ts",
-    "packages/*/drizzle.config.ts"
+    "packages/*/drizzle.config.ts",
+    "apps/api/src/testing.ts"
   ]
 }

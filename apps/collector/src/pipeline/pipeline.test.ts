@@ -20,7 +20,7 @@ import {
   type NormalizedItem,
 } from '@panel/shared';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { cveIdsNeedingEpss } from './cves.js';
+import { cveIdsNeedingEpss, refreshAllPriorities } from './cves.js';
 import { processItems, urlHash, type PipelineDeps, type PipelineSource } from './index.js';
 
 const root = (path: string) => fileURLToPath(new URL(`../../../../${path}`, import.meta.url));
@@ -234,6 +234,7 @@ describe('CVEs', () => {
     expect(result).toMatchObject({ inserted: 1, newCves: 1, events: 1 });
     // 35·0.98 + 0 (no EPSS) + 0 (no KEV) + 10 (PHP on watchlist)
     expect(cveRow()?.priority).toBe(44.3);
+    expect(cveRow()?.watchlistJson).toEqual(['PHP']);
     expect(run([nvdCve({ cvss: 7.5, severity: 'high' })], source('nvd')).updated).toBe(1);
     expect(cveRow()?.cvss).toBe(7.5);
   });
@@ -377,6 +378,19 @@ describe('CVEs', () => {
       product: 'Php',
       fixedVersions: '8.3.14',
       ghsaId: 'GHSA-2c8m-mx4q-vw9r',
+    });
+  });
+});
+
+describe('refreshAllPriorities', () => {
+  it('recomputes labels and priority for every CVE after a watchlist change', () => {
+    run([nvdCve()], source('nvd'));
+    expect(handle.db.select().from(schema.cves).get()?.watchlistJson).toEqual(['PHP']);
+    const withoutPhp = DEFAULT_WATCHLIST.filter((e) => e.id !== 'php');
+    expect(refreshAllPriorities(handle.db, withoutPhp)).toBe(1);
+    expect(handle.db.select().from(schema.cves).get()).toMatchObject({
+      watchlistJson: [],
+      priority: 34.3,
     });
   });
 });

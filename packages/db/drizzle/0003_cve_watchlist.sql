@@ -1,0 +1,1 @@
+ALTER TABLE `cves` ADD `watchlist_json` text DEFAULT '[]' NOT NULL;

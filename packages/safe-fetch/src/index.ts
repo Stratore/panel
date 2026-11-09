@@ -4,3 +4,4 @@ export * from './url.js';
 export * from './fetch.js';
 export * from './xml.js';
 export * from './text.js';
+export * from './feed.js';

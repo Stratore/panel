@@ -65,3 +65,16 @@ Pure, dependency-light domain logic (Zod only), usable from Node and the browser
 | `scheduler/runner.ts`    | One source run: conditional fetch, Zod validation of every candidate, pipeline, `fetch_runs`, health and circuit breaker                                                                                                                               |
 | `scheduler/scheduler.ts` | croner jobs, jitter, maintenance                                                                                                                                                                                                                       |
 | `main.ts`                | Boot (migrate, seed), scheduler, `--once [sourceId]` for one-shot runs                                                                                                                                                                                 |
+
+## `apps/api`
+
+| Module              | Content                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| `app.ts`            | `buildApp(deps)`: helmet (CSP § 9.2), cookies, rate limit, ETag, CSRF, session guard, routes           |
+| `auth.ts`           | Argon2id, HMAC'd server-side sessions, setup / login / logout, login throttle                          |
+| `http.ts`           | RFC 9457 problems, `parseInput` / `sendJson` (Zod in and out), ETag, CSRF, cursors                     |
+| `routes/content.ts` | `/journal`, `/brief`, `/items`, `/cves`, `/cves/:id`, `/breaches`, `/releases`, `/repos`, `/search`    |
+| `routes/admin.ts`   | `/sources` (CRUD and `/validate`), `/prefs`, `/visit`, `/export`, `/import`, `/alerts/test`, `/health` |
+| `routes/stream.ts`  | `/stream` (SSE tail of the `events` table)                                                             |
+| `feeds.ts`          | Check-by-check feed validation for "Test feed"                                                         |
+| `server.ts`         | Boot: config, migrations, first-launch setup token in the logs                                         |

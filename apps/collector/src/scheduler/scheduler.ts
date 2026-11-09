@@ -7,7 +7,7 @@ import {
   schema,
   type DatabaseHandle,
 } from '@panel/db';
-
+import { refreshAllPriorities } from '../pipeline/cves.js';
 import { describeError, runSource, type RunnerDeps } from './runner.js';
 
 const { sources } = schema;
@@ -96,6 +96,11 @@ export function startScheduler(deps: RunnerDeps, options: SchedulerOptions): { s
       '30 3 * * *',
       { protect: true },
       guard('purge', () => purgeExpired(deps.db, deps.now())),
+    ),
+    new Cron(
+      '45 3 * * *',
+      { protect: true },
+      guard('priorities', () => refreshAllPriorities(deps.db, deps.pipeline.watchlist)),
     ),
     new Cron(
       '0 4 * * 0',

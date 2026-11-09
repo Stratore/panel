@@ -1,17 +1,6 @@
-import { toPlainText } from '@panel/safe-fetch';
+import { textOf, toPlainText } from '@panel/safe-fetch';
 import { LIMITS } from '@panel/shared';
 import { AdapterError, type FetchContext, type FetchResult } from './types.js';
-
-export const asArray = <T>(value: T | T[] | null | undefined): T[] =>
-  value === undefined || value === null ? [] : Array.isArray(value) ? value : [value];
-
-/** Text of a parsed XML node: plain string, number, or `{ '#text': … }`. */
-export function textOf(node: unknown): string {
-  if (typeof node === 'string') return node;
-  if (typeof node === 'number') return String(node);
-  if (node !== null && typeof node === 'object' && '#text' in node) return textOf(node['#text']);
-  return '';
-}
 
 export const plainTitle = (raw: string): string => toPlainText(raw, LIMITS.titleLength);
 export const plainSummary = (raw: string): string => toPlainText(raw, LIMITS.summaryLength);

@@ -6,9 +6,19 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "start": "node dist/server.js"
   },
   "dependencies": {
-    "@panel/shared": "workspace:*"
+    "@fastify/cookie": "11.1.5",
+    "@fastify/helmet": "13.2.0",
+    "@fastify/rate-limit": "11.2.2",
+    "@node-rs/argon2": "2.2.2",
+    "@panel/db": "workspace:*",
+    "@panel/safe-fetch": "workspace:*",
+    "@panel/shared": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "fastify": "5.12.8",
+    "zod": "4.6.7"
   }
 }

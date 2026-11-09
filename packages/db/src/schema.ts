@@ -128,6 +128,8 @@ export const cves = sqliteTable(
     published: timestamp('published'),
     modified: timestamp('modified'),
     priority: real('priority').notNull().default(0),
+    /** Watchlist labels matched by product, KEV name, description or CPEs (kept by the collector). */
+    watchlistJson: text('watchlist_json', { mode: 'json' }).$type<string[]>().notNull().default([]),
   },
   (t) => [
     index('cves_priority_idx').on(t.priority),

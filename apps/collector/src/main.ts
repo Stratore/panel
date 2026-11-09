@@ -9,6 +9,7 @@ import { compileKeywords, keywordsConfigSchema, watchlistEntrySchema } from '@pa
 import { createAdapters } from './adapters/index.js';
 import { loadConfig } from './config.js';
 import { TaskQueue } from './scheduler/queue.js';
+import { refreshAllPriorities } from './pipeline/cves.js';
 import { runSource, type RunnerDeps } from './scheduler/runner.js';
 import { intervalOf, startScheduler } from './scheduler/scheduler.js';
 
@@ -83,6 +84,9 @@ async function runAll(only?: string): Promise<void> {
   await Promise.all(targets.filter((s) => s.id !== 'epss').map(run));
   await Promise.all(targets.filter((s) => s.id === 'epss').map(run));
 }
+
+// Watchlist edits and schema upgrades reach every CVE (cheap: a few seconds for ~10k rows).
+logger.info({ cves: refreshAllPriorities(handle.db, loadWatchlist()) }, 'priorities refreshed');
 
 const args = process.argv.slice(2);
 if (args[0] === '--once') {
