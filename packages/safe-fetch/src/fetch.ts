@@ -16,6 +16,7 @@ export const SAFE_FETCH_LIMITS = {
   maxBytesDefault: 5 * 1024 * 1024,
   maxBytesCustom: 2 * 1024 * 1024,
   maxRedirects: 3,
+  maxRequestBodyBytes: 64 * 1024,
 } as const;
 
 export const ALLOWED_CONTENT_TYPES: ReadonlySet<string> = new Set([
@@ -53,6 +54,11 @@ export interface SafeFetchOptions {
   /** Lowers the total timeout; can never raise it above 10 s. */
   timeoutMs?: number;
   signal?: AbortSignal;
+  /**
+   * Sends a JSON POST instead of a GET (outgoing webhooks: Discord, Telegram). Redirects are
+   * never followed for a POST and the body is capped at `maxRequestBodyBytes`.
+   */
+  json?: string;
 }
 
 export interface SafeFetchResponse {
@@ -232,6 +238,10 @@ export function createSafeFetch(deps: SafeFetchDeps): SafeFetch {
       ...(options.signal ? [options.signal] : []),
     ]);
 
+    const json = options.json;
+    if (json !== undefined && Buffer.byteLength(json) > SAFE_FETCH_LIMITS.maxRequestBodyBytes) {
+      throw new SafeFetchError('TOO_LARGE', 'Request body is too large');
+    }
     const initialUrl = validateTargetUrl(input, policy);
     let url = initialUrl;
     let headers: Record<string, string> = {
@@ -241,16 +251,26 @@ export function createSafeFetch(deps: SafeFetchDeps): SafeFetch {
     };
     for (const [name, value] of Object.entries(options.headers ?? {}))
       headers[name.toLowerCase()] = value;
+    if (json !== undefined) headers['content-type'] = 'application/json';
 
     for (let redirects = 0; ; redirects++) {
       const pinned = await resolvePinned(url, deps);
       const agent = pinnedAgent(pinned);
       try {
-        const response = await request(url, { method: 'GET', headers, dispatcher: agent, signal });
+        const response = await request(url, {
+          method: json === undefined ? 'GET' : 'POST',
+          headers,
+          ...(json === undefined ? {} : { body: json }),
+          dispatcher: agent,
+          signal,
+        });
         const responseHeaders = flattenHeaders(response.headers);
 
         if (REDIRECT_STATUSES.has(response.statusCode)) {
           await response.body.dump();
+          if (json !== undefined) {
+            throw new SafeFetchError('BAD_REDIRECT', 'Redirects are not followed for a POST');
+          }
           if (redirects >= SAFE_FETCH_LIMITS.maxRedirects) {
             throw new SafeFetchError('TOO_MANY_REDIRECTS', 'Too many redirects');
           }
@@ -281,7 +301,11 @@ export function createSafeFetch(deps: SafeFetchDeps): SafeFetch {
           url: url.href,
           redirects,
         };
-        if (response.statusCode < 200 || response.statusCode >= 300) {
+        if (
+          response.statusCode === 204 ||
+          response.statusCode < 200 ||
+          response.statusCode >= 300
+        ) {
           await response.body.dump();
           return {
             ...base,

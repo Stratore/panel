@@ -39,7 +39,12 @@ export interface ApiConfig {
   setupTokenGenerated: boolean;
   trustProxy: boolean;
   logLevel: z.infer<typeof envSchema>['LOG_LEVEL'];
-  channels: { discord: boolean; telegram: boolean };
+  /** Notifier secrets, used by "Send a test alert" (SPEC § 7.10). Never logged. */
+  alertSecrets: {
+    discordWebhookUrl: string | undefined;
+    telegramBotToken: string | undefined;
+    telegramChatId: string | undefined;
+  };
   version: string;
 }
 
@@ -62,9 +67,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     setupTokenGenerated: generated,
     trustProxy: parsed.TRUST_PROXY,
     logLevel: parsed.LOG_LEVEL,
-    channels: {
-      discord: parsed.DISCORD_WEBHOOK_URL !== undefined,
-      telegram: parsed.TELEGRAM_BOT_TOKEN !== undefined && parsed.TELEGRAM_CHAT_ID !== undefined,
+    alertSecrets: {
+      discordWebhookUrl: parsed.DISCORD_WEBHOOK_URL,
+      telegramBotToken: parsed.TELEGRAM_BOT_TOKEN,
+      telegramChatId: parsed.TELEGRAM_CHAT_ID,
     },
     version: pkg.version,
   };

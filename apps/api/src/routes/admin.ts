@@ -5,7 +5,8 @@ import { basename, join } from 'node:path';
 import { count, eq, inArray, max, sql } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { backupDatabase, schema, type DatabaseHandle, type PanelDb } from '@panel/db';
+import { backupDatabase, readPrefs, schema, type DatabaseHandle, type PanelDb } from '@panel/db';
+import { sendTestAlert, type AlertChannel, type Channel } from '@panel/notifier';
 import type { SafeFetch } from '@panel/safe-fetch';
 import {
   alertTestDtoSchema,
@@ -25,15 +26,14 @@ import {
 } from '@panel/shared';
 import { validateFeed } from '../feeds.js';
 import { HttpProblem, parseInput, sendJson } from '../http.js';
-import { readPrefs } from './content.js';
 
 const { sources, fetchRuns, prefs, watchlist, items, cves, breaches } = schema;
 
 export const MAX_CUSTOM_SOURCES = 100;
 
-export type AlertChannel = 'discord' | 'telegram';
+export type { AlertChannel };
 
-/** Implemented by the notifier (Phase 8). */
+/** Backed by `@panel/notifier`; tests inject a fake. */
 export interface AlertSender {
   configured(): AlertChannel[];
   sendTest(): Promise<{ sent: AlertChannel[]; failed: AlertChannel[] }>;
@@ -407,7 +407,7 @@ export function registerAdminRoutes(app: FastifyInstance, deps: AdminDeps): void
   });
 }
 
-/** Until the notifier exists (Phase 8), channels are reported but nothing is sent. */
+/** Reports channels without sending anything (tests, demo server). */
 export function noAlerts(channels: { discord: boolean; telegram: boolean }): AlertSender {
   const configured: AlertChannel[] = [];
   if (channels.discord) configured.push('discord');
@@ -415,5 +415,17 @@ export function noAlerts(channels: { discord: boolean; telegram: boolean }): Ale
   return {
     configured: () => configured,
     sendTest: () => Promise.resolve({ sent: [], failed: configured }),
+  };
+}
+
+/** The real sender: the configured Discord/Telegram channels, in the instance language. */
+export function channelAlerts(
+  channels: readonly Channel[],
+  db: PanelDb,
+  publicUrl: string | undefined,
+): AlertSender {
+  return {
+    configured: () => channels.map((c) => c.name),
+    sendTest: () => sendTestAlert(channels, readPrefs(db).lang, publicUrl),
   };
 }

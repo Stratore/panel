@@ -77,6 +77,7 @@ describe('openDatabase + migrateDatabase', () => {
         'repo_stars',
         'watchlist',
         'alerts_sent',
+        'alert_queue',
         'prefs',
         'users',
         'sessions',

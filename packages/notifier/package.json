@@ -1,0 +1,25 @@
+{
+  "name": "@panel/notifier",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Alert rules, rate limits, quiet hours, daily digest and the Discord/Telegram channels.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@panel/db": "workspace:*",
+    "@panel/safe-fetch": "workspace:*",
+    "@panel/shared": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "zod": "4.6.7"
+  }
+}

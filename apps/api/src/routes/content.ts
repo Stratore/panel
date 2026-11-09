@@ -1,7 +1,7 @@
 import { and, count, desc, eq, gte, inArray, lt, max, or, sql, type SQL } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { schema, type PanelDb } from '@panel/db';
+import { readPrefs, schema, type PanelDb } from '@panel/db';
 import {
   briefDtoSchema,
   breachDtoSchema,
@@ -10,13 +10,11 @@ import {
   cveIdSchema,
   cveSummaryDtoSchema,
   cvesQuerySchema,
-  DEFAULT_PREFS,
   itemDtoSchema,
   itemsQuerySchema,
   journalDtoSchema,
   listQuerySchema,
   pageSchema,
-  prefsSchema,
   releaseDtoSchema,
   repoDtoSchema,
   searchDtoSchema,
@@ -29,7 +27,6 @@ import {
   sixtyRelease,
   sixtyStory,
   type ItemDto,
-  type Prefs,
   type RepoDto,
   type SixtyEntry,
 } from '@panel/shared';
@@ -44,7 +41,7 @@ import {
   toRelease,
 } from '../dto.js';
 
-const { items, cves, breaches, releases, repos, repoStars, fetchRuns, prefs, watchlist } = schema;
+const { items, cves, breaches, releases, repos, repoStars, fetchRuns, watchlist } = schema;
 
 const DAY = 86_400_000;
 const isoDay = (date: Date) => date.toISOString().slice(0, 10);
@@ -54,13 +51,6 @@ const TICKER_MIN_RANK = 0.3;
 export interface ContentDeps {
   db: PanelDb;
   now: () => Date;
-}
-
-export function readPrefs(db: PanelDb): Prefs {
-  const parsed = prefsSchema.safeParse(
-    db.select().from(prefs).where(eq(prefs.key, 'prefs')).get()?.valueJson,
-  );
-  return parsed.success ? parsed.data : DEFAULT_PREFS;
 }
 
 const offsetCursor = z.strictObject({ o: z.int().min(0).max(100_000) });

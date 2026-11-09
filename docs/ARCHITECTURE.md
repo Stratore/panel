@@ -9,7 +9,8 @@
 | `packages/shared`     | Types, Zod schemas, constants, scoring, classification |
 | `packages/db`         | Drizzle schema, migrations, seed                       |
 | `packages/safe-fetch` | SSRF-safe HTTP client, safe XML parser, HTML-to-text   |
-| `apps/collector`      | Scheduler, adapters, pipeline, notifier                |
+| `packages/notifier`   | Alert rules, limits, digest, Discord and Telegram      |
+| `apps/collector`      | Scheduler, adapters, pipeline, runs the notifier       |
 | `apps/api`            | Fastify: auth, REST, SSE                               |
 | `apps/web`            | Vite + TypeScript + native Web Components              |
 
@@ -54,6 +55,19 @@ Pure, dependency-light domain logic (Zod only), usable from Node and the browser
 | `text.ts`   | `decodeXmlEntities`, `htmlToText`, `cleanText`, `toPlainText`                                     |
 | `errors.ts` | `SafeFetchError` with a typed `code` per refused check                                            |
 
+## `packages/notifier`
+
+| Module        | Content                                                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `rules.ts`    | The five rules of SPEC § 7.10 (KEV, critical watchlist, breach, CERT-FR alert, HN), lookback windows, EN/FR text |
+| `notifier.ts` | `runAlerts`: dedupe through `alerts_sent`, hourly cap, quiet hours, `alert_queue`, daily digest; `sendTestAlert` |
+| `message.ts`  | Channel-neutral message, plain text, Discord embed and Telegram HTML payloads                                    |
+| `escape.ts`   | Control/bidi stripping, grapheme-safe truncation, Discord markdown and mention escaping, Telegram HTML escaping  |
+| `channels.ts` | Discord webhook and Telegram Bot API senders over `safeFetch` (JSON POST, no redirects), secret validation       |
+| `time.ts`     | Local time in `TZ`, quiet-hour windows across midnight                                                           |
+
+The collector runs `runAlerts` every minute; the API uses the same channels for "Send a test alert".
+
 ## `apps/collector`
 
 | Module                   | Content                                                                                                                                                                                                                                                |
@@ -64,7 +78,7 @@ Pure, dependency-light domain logic (Zod only), usable from Node and the browser
 | `scheduler/retry.ts`     | 3 attempts on 429/5xx/timeouts, 2 s doubling to 60 s with jitter, `Retry-After` honoured                                                                                                                                                               |
 | `scheduler/runner.ts`    | One source run: conditional fetch, Zod validation of every candidate, pipeline, `fetch_runs`, health and circuit breaker                                                                                                                               |
 | `scheduler/scheduler.ts` | croner jobs, jitter, maintenance                                                                                                                                                                                                                       |
-| `main.ts`                | Boot (migrate, seed), scheduler, `--once [sourceId]` for one-shot runs                                                                                                                                                                                 |
+| `main.ts`                | Boot (migrate, seed), scheduler, notifier every minute, `--once [sourceId]` for one-shot runs                                                                                                                                                          |
 
 ## `apps/api`
 

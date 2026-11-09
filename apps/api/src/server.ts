@@ -5,7 +5,8 @@ import { migrateDatabase, openDatabase, schema } from '@panel/db';
 import { safeFetch } from '@panel/safe-fetch';
 import { buildApp } from './app.js';
 import { loadConfig } from './config.js';
-import { noAlerts } from './routes/admin.js';
+import { createChannels } from '@panel/notifier';
+import { channelAlerts } from './routes/admin.js';
 
 const config = loadConfig();
 // eslint-disable-next-line security/detect-non-literal-fs-filename -- path from deployment config
@@ -13,11 +14,13 @@ mkdirSync(dirname(config.databasePath), { recursive: true, mode: 0o700 });
 const handle = openDatabase(config.databasePath);
 migrateDatabase(handle.db);
 
+const alertChannels = createChannels(config.alertSecrets, safeFetch);
+
 const app = await buildApp({
   db: handle.db,
   sqlite: handle.sqlite,
   safeFetch,
-  alerts: noAlerts(config.channels),
+  alerts: channelAlerts(alertChannels.channels, handle.db, config.publicOrigin),
   sessionSecret: config.sessionSecret,
   setupToken: config.setupToken,
   publicOrigin: config.publicOrigin,
@@ -25,6 +28,10 @@ const app = await buildApp({
   version: config.version,
   logLevel: config.logLevel,
 });
+
+if (alertChannels.invalid.length > 0) {
+  app.log.warn({ variables: alertChannels.invalid }, 'alert channel disabled: invalid setting');
+}
 
 const users = handle.db.select({ n: count() }).from(schema.users).get()?.n ?? 0;
 if (users === 0) {

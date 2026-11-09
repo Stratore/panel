@@ -1,9 +1,11 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { Cron } from 'croner';
 import { eq } from 'drizzle-orm';
 import { pino } from 'pino';
 import { loadSourcesCatalog, migrateDatabase, openDatabase, schema, seedDatabase } from '@panel/db';
+import { createChannels, runAlerts } from '@panel/notifier';
 import { safeFetch } from '@panel/safe-fetch';
 import { compileKeywords, keywordsConfigSchema, watchlistEntrySchema } from '@panel/shared';
 import { createAdapters } from './adapters/index.js';
@@ -19,7 +21,17 @@ const logger = pino({
   base: { service: 'collector' },
   // Secrets never reach the logs, even if an object carrying them is logged by mistake.
   redact: {
-    paths: ['*.apiKey', '*.authorization', '*.token', '*.githubToken', '*.nvdApiKey', 'secrets'],
+    paths: [
+      '*.apiKey',
+      '*.authorization',
+      '*.token',
+      '*.githubToken',
+      '*.nvdApiKey',
+      '*.discordWebhookUrl',
+      '*.telegramBotToken',
+      'secrets',
+      'alertSecrets',
+    ],
     censor: '[redacted]',
   },
 });
@@ -68,6 +80,27 @@ const deps: RunnerDeps = {
   random: Math.random,
 };
 
+// Notifier (SPEC § 7.10). A malformed secret disables its channel; its value is never logged.
+const alertChannels = createChannels(config.alertSecrets, safeFetch);
+if (alertChannels.invalid.length > 0)
+  logger.warn({ variables: alertChannels.invalid }, 'alert channel disabled: invalid setting');
+logger.info(
+  { channels: alertChannels.channels.map((c) => c.name), timeZone: config.timeZone },
+  'notifier ready',
+);
+const alerts = async (): Promise<void> => {
+  await runAlerts({
+    db: handle.db,
+    channels: alertChannels.channels,
+    now: new Date(),
+    timeZone: config.timeZone,
+    publicUrl: config.publicUrl,
+    logger,
+  }).catch((error: unknown) => {
+    logger.error({ err: error }, 'alerts run failed');
+  });
+};
+
 const enabledSources = () =>
   handle.db
     .select({ id: schema.sources.id, schedule: schema.sources.schedule })
@@ -91,14 +124,19 @@ logger.info({ cves: refreshAllPriorities(handle.db, loadWatchlist()) }, 'priorit
 const args = process.argv.slice(2);
 if (args[0] === '--once') {
   await runAll(args[1]);
+  await alerts();
   handle.close();
   logger.info('one-shot collection finished');
 } else {
   const scheduler = startScheduler(deps, { sqlite: handle.sqlite, backupDir: config.backupDir });
   void runAll();
+  // Every minute: new rows from any source, quiet hours ending and the digest time are all
+  // picked up within a minute. `protect` skips a tick while the previous run is still going.
+  const notifier = new Cron('* * * * *', { protect: true }, alerts);
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');
     scheduler.stop();
+    notifier.stop();
     handle.close();
     process.exit(0);
   };

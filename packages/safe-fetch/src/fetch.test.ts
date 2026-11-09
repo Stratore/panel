@@ -12,12 +12,25 @@ import { isPublicAddress } from './ip.js';
  */
 let server: Server;
 let port: number;
-let seen: { url: string; headers: IncomingHttpHeaders }[] = [];
+let seen: { url: string; headers: IncomingHttpHeaders; method?: string; body?: string }[] = [];
 
 const RSS = '<?xml version="1.0"?><rss version="2.0"><channel><title>Feed</title></channel></rss>';
 
 beforeAll(async () => {
   server = createServer((req, res) => {
+    if (req.method === 'POST') {
+      let body = '';
+      req.setEncoding('utf8');
+      req.on('data', (chunk: string) => (body += chunk));
+      req.on('end', () => {
+        seen.push({ url: req.url ?? '', headers: req.headers, method: 'POST', body });
+        if (req.url === '/hook') res.writeHead(204).end();
+        else if (req.url === '/hook-json')
+          res.writeHead(200, { 'content-type': 'application/json' }).end('{"ok":true}');
+        else res.writeHead(302, { location: '/hook' }).end();
+      });
+      return;
+    }
     seen.push({ url: req.url ?? '', headers: req.headers });
     const url = new URL(req.url ?? '/', 'http://x');
     const xml = { 'content-type': 'application/rss+xml; charset=utf-8' };
@@ -409,5 +422,42 @@ describe('safeFetch: resource limits', () => {
     await expectCode(createSafeFetch(deps)(`${base()}/feed`, httpDefault), 'DNS_FAILURE');
     const empty = testDeps({ resolveHost: () => Promise.resolve([]) });
     await expectCode(createSafeFetch(empty)(`${base()}/feed`, httpDefault), 'DNS_FAILURE');
+  });
+});
+
+describe('safeFetch: JSON POST (outgoing webhooks)', () => {
+  it('posts the JSON body and accepts an empty 204', async () => {
+    const fetcher = createSafeFetch(testDeps());
+    const res = await fetcher(`${base()}/hook`, { ...httpDefault, json: '{"a":1}' });
+    expect(res).toMatchObject({ status: 204, body: '' });
+    expect(seen[0]).toMatchObject({ method: 'POST', body: '{"a":1}' });
+    expect(seen[0]?.headers['content-type']).toBe('application/json');
+  });
+
+  it('reads a JSON answer', async () => {
+    const fetcher = createSafeFetch(testDeps());
+    const res = await fetcher(`${base()}/hook-json`, { ...httpDefault, json: '{}' });
+    expect(res.body).toBe('{"ok":true}');
+  });
+
+  it('never follows a redirect for a POST', async () => {
+    const fetcher = createSafeFetch(testDeps());
+    await expectCode(fetcher(`${base()}/moved`, { ...httpDefault, json: '{}' }), 'BAD_REDIRECT');
+    expect(seen).toHaveLength(1);
+  });
+
+  it('refuses oversized bodies before connecting', async () => {
+    const fetcher = createSafeFetch(testDeps());
+    const json = JSON.stringify({ text: 'a'.repeat(70 * 1024) });
+    await expectCode(fetcher(`${base()}/hook`, { ...httpDefault, json }), 'TOO_LARGE');
+    expect(seen).toHaveLength(0);
+  });
+
+  it('applies the SSRF policy to POST targets too', async () => {
+    const fetcher = createSafeFetch(testDeps());
+    await expectCode(
+      fetcher(`http://internal.test:${String(port)}/hook`, { ...httpDefault, json: '{}' }),
+      'BLOCKED_ADDRESS',
+    );
   });
 });

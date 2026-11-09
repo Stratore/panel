@@ -68,3 +68,15 @@ Every outbound request goes through `packages/safe-fetch`. ESLint forbids `fetch
 | Custom source added without checks    | "Add" stays disabled until a passing validation; the API re-validates on create (ADR-028)                     | e2e: private address refused, Add disabled    |
 | Database exfiltration via backup      | `/api/backup` requires a session, is rate limited, `no-store`, never cached by the Service Worker             | `routes.test.ts` (401 without session)        |
 | Validation library shipped to clients | Build fails if Zod appears in a browser bundle                                                                | `check-bundle.mjs`                            |
+
+## Notifier (Phase 8)
+
+| Threat                                 | Control                                                                                                     | Verified by                                         |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Mass mention (`@everyone`) from a feed | `allowed_mentions: { parse: [] }` on every Discord message, `@` broken with a zero-width space              | `message.test.ts`                                   |
+| Markup injection in bots               | Discord markdown escaped; Telegram HTML escaped (`& < > "`), link targets escaped and limited to http(s)    | `message.test.ts` (script, spoiler and link probes) |
+| Hidden or reordered text               | Control, bidi and zero-width characters removed before formatting                                           | `message.test.ts`                                   |
+| Oversized messages                     | Grapheme-safe truncation per field, whole lines dropped under platform limits                               | `message.test.ts`                                   |
+| Webhook secret leak                    | Errors contain the channel and a code only; Pino redaction; values never logged                             | `channels.test.ts`                                  |
+| Webhook URL abused for SSRF            | Discord host and path allow-list; requests go through `safeFetch` (pinned DNS, IP policy, no POST redirect) | `channels.test.ts`, `fetch.test.ts` (JSON POST)     |
+| Alert flood or repeats after a restart | Per-channel dedupe keys in the database, hourly cap, lookback windows, durable queue                        | `notifier.test.ts` ("no duplicate after a restart") |

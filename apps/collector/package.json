@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@panel/db": "workspace:*",
+    "@panel/notifier": "workspace:*",
     "@panel/safe-fetch": "workspace:*",
     "@panel/shared": "workspace:*",
     "croner": "11.0.0",

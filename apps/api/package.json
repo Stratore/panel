@@ -15,6 +15,7 @@
     "@fastify/rate-limit": "11.2.2",
     "@node-rs/argon2": "2.2.2",
     "@panel/db": "workspace:*",
+    "@panel/notifier": "workspace:*",
     "@panel/safe-fetch": "workspace:*",
     "@panel/shared": "workspace:*",
     "drizzle-orm": "0.45.4",

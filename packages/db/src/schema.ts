@@ -230,6 +230,20 @@ export const alertsSent = sqliteTable(
   ],
 );
 
+/**
+ * Alerts held back by the hourly cap or quiet hours, sent in the next daily digest. Stored in
+ * the database so a restart neither loses nor repeats them (SPEC § 7.10).
+ */
+export const alertQueue = sqliteTable(
+  'alert_queue',
+  {
+    dedupeKey: text('dedupe_key').primaryKey(),
+    payloadJson: text('payload_json', { mode: 'json' }).$type<unknown>().notNull(),
+    queuedAt: timestamp('queued_at').notNull(),
+  },
+  (t) => [index('alert_queue_queued_idx').on(t.queuedAt)],
+);
+
 export const prefs = sqliteTable('prefs', {
   key: text('key').primaryKey(),
   valueJson: text('value_json', { mode: 'json' }).$type<unknown>().notNull(),

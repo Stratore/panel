@@ -268,3 +268,37 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 - **Date:** 2026-11-09
 - **Context:** SPEC § 12 asks for an end-to-end journey and an accessibility audit with no serious or critical violation.
 - **Decision:** `@playwright/test` (Microsoft, no runtime dependencies besides its own `playwright-core`) and `@axe-core/playwright` (Deque, depends only on `axe-core`), both dev-only. One serial spec runs setup → login → Journal filter → CVE drawer from the keyboard → custom source validation → FR/dark switches → axe on every page, and asserts zero `securitypolicyviolation` events from the first script of each document. Locally it uses the installed Edge (`channel: msedge`); CI installs the Chromium headless shell and uploads traces on failure. The session is created once and reused because logging in is rate limited.
+
+## ADR-037 — Notifier as a workspace package
+
+- **Date:** 2026-11-09
+- **Context:** SPEC § 3.4 places the notifier in `apps/collector/src/notifier`, but the API also needs the channels for "Send a test alert", and the API must not depend on the collector.
+- **Decision:** `packages/notifier` holds the rules, the message formats, the channels and the run loop. The collector runs `runAlerts` every minute (croner, `protect: true`); the API builds the same channels for `/api/alerts/test`. No new third-party dependency.
+- **Every minute instead of "after each collection":** new rows from any source, the end of quiet hours and the digest time are all seen within a minute, with one code path and no coupling to the runner. Each pass is a handful of indexed queries.
+
+## ADR-038 — `safeFetch` sends JSON POSTs for webhooks
+
+- **Date:** 2026-11-09
+- **Decision:** a `json` option turns the request into a POST with `content-type: application/json`. Every existing protection still applies (DNS pinning, IP policy, ports, timeouts, response size). POSTs never follow redirects (`BAD_REDIRECT`), request bodies are capped at 64 KB, and a 204 is an empty success. ESLint still bans `fetch`, so webhooks cannot bypass it.
+
+## ADR-039 — Alert delivery rules
+
+- **Date:** 2026-11-09
+- **Decision:**
+  - **Dedupe:** `alerts_sent(dedupe_key, channel)` records each delivery per channel, so a channel that failed is retried alone and nothing is sent twice, including after a restart. A KEV alert also records the `crit:` key of its CVE: one CVE, one message.
+  - **Lookback:** rules only look at recent rows (KEV added in the last 2 days, CVEs published or modified in 48 h, breaches added in 7 days, CERT-FR and HN items fetched in 48 h), so a fresh install or a long outage does not flood the channels.
+  - **Cap and quiet hours:** at most `maxPerHour` alerts (default 5) per rolling hour; above it, or during quiet hours, alerts go to `alert_queue` (a new table, migration 0004).
+  - **Digest:** at `digestAt` (default 08:00, in `TZ`), each channel receives one message listing the alerts queued before that time (15 shown, then "and N more"). It may be sent up to 3 hours late (a restart, a failing channel), never later; a per-channel `digest:{date}` marker prevents repeats. Queue rows older than 7 days are dropped so a dead channel cannot grow the queue forever.
+  - **Language:** messages use the instance language (EN/FR). The fire emoji is the only emoji and appears only in bot messages (SPEC § 7.10).
+  - **HIBP "sensitive" breaches** stay in Panel and are never pushed to a chat channel.
+  - **Links** go to the instance (`PANEL_PUBLIC_URL`), else to the public source (NVD, HIBP, the article).
+
+## ADR-040 — Channel secrets and escaping
+
+- **Date:** 2026-11-09
+- **Decision:**
+  - Only `https://discord.com|discordapp.com/api/webhooks/<id>/<token>` URLs are accepted (no port, no credentials), and Telegram tokens and chat ids must match their formats. A malformed value disables its channel and is reported by variable name only.
+  - Errors carry the channel and a short reason (`HTTP 429`, `TIMEOUT`), never the URL or token and never the underlying error as `cause`. Pino also redacts `*.discordWebhookUrl` and `*.telegramBotToken`.
+  - External text first loses control, bidi and invisible format characters and newlines (the notifier builds every line), then is truncated on grapheme clusters.
+  - Discord: every markdown character is backslash-escaped, `@` gets a zero-width space, and `allowed_mentions: { parse: [] }` is always sent; text sits in an embed (no `content`).
+  - Telegram: `parse_mode: "HTML"`, with `& < > "` escaped in every external string, including link targets. `disable_web_page_preview` and `link_preview_options.is_disabled` are both set. Escaped text is never cut: lines are dropped whole to stay under the limits.
