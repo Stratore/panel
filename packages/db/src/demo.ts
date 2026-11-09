@@ -225,266 +225,269 @@ const day = (now: Date, daysAgo: number) =>
   new Date(now.getTime() - daysAgo * 24 * H).toISOString().slice(0, 10);
 
 export function seedDemoData(db: PanelDb, now: Date = new Date()): void {
-  db.transaction((tx) => {
-    const ago = (hours: number) => new Date(now.getTime() - hours * H);
+  db.transaction(
+    (tx) => {
+      const ago = (hours: number) => new Date(now.getTime() - hours * H);
 
-    tx.insert(cves)
-      .values([
-        {
-          cveId: 'CVE-2026-41234',
-          descriptionEn:
-            'Out-of-bounds write in PHP before 8.3.14 and 8.2.27 allows remote code execution.',
-          product: 'PHP',
-          cvss: 9.8,
-          cvssVersion: '3.1',
-          vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',
-          severity: 'critical',
-          epss: 0.94,
-          epssPercentile: 0.998,
-          epssDate: day(now, 0),
-          kev: true,
-          kevName: 'PHP Remote Code Execution Vulnerability',
-          kevAdded: day(now, 0),
-          kevDue: day(now, -21),
-          cwe: 'CWE-787',
-          affectedJson: ['8.1.x', '8.2.0 – < 8.2.27', '8.3.0 – < 8.3.14'],
-          cpesJson: ['cpe:2.3:a:php:php:*:*:*:*:*:*:*:*'],
-          fixedVersions: '8.3.14 · 8.2.27',
-          referencesJson: [
-            'https://www.php.net/ChangeLog-8.php',
-            'https://www.cisa.gov/known-exploited-vulnerabilities-catalog',
-            'https://exploits.example.org/php-41234',
-          ],
-          hasPublicExploit: true,
-          published: ago(30),
-          modified: ago(2),
-          priority: 99.4,
-          watchlistJson: ['PHP'],
-        },
-        {
-          cveId: 'CVE-2026-40999',
-          descriptionEn: 'Authentication bypass in OpenSSH under specific PAM configurations.',
-          product: 'OpenSSH',
-          cvss: 8.1,
-          cvssVersion: '3.1',
-          vector: 'CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H',
-          severity: 'high',
-          epss: 0.61,
-          epssPercentile: 0.97,
-          epssDate: day(now, 0),
-          cwe: 'CWE-287',
-          affectedJson: ['< 9.9p2'],
-          cpesJson: ['cpe:2.3:a:openbsd:openssh:*:*:*:*:*:*:*:*'],
-          fixedVersions: '9.9p2',
-          referencesJson: ['https://www.openssh.example.org/security.html'],
-          published: ago(20),
-          modified: ago(6),
-          priority: 67.5,
-          watchlistJson: ['OpenSSH'],
-        },
-        {
-          cveId: 'CVE-2026-40712',
-          descriptionEn: 'Use-after-free in the Linux kernel allows local privilege escalation.',
-          product: 'Linux kernel',
-          cvss: 7.8,
-          cvssVersion: '3.1',
-          vector: 'CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H',
-          severity: 'high',
-          epss: 0.12,
-          epssPercentile: 0.91,
-          epssDate: day(now, 0),
-          kev: true,
-          kevName: 'Linux Kernel Use-After-Free Vulnerability',
-          kevAdded: day(now, 2),
-          kevDue: day(now, -19),
-          kevRansomware: true,
-          cwe: 'CWE-416',
-          affectedJson: ['6.1 – < 6.1.118', '6.6 – < 6.6.62'],
-          cpesJson: ['cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*'],
-          fixedVersions: '6.1.118 · 6.6.62',
-          referencesJson: ['https://kernel.example.org/stable/'],
-          published: ago(70),
-          modified: ago(30),
-          priority: 89.6,
-          watchlistJson: ['Linux'],
-        },
-        {
-          cveId: 'CVE-2026-40655',
-          descriptionEn: 'Container escape in Docker Engine through a crafted image layer.',
-          product: 'Docker',
-          cvss: 8.6,
-          cvssVersion: '3.1',
-          vector: 'CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H',
-          severity: 'high',
-          epss: 0.08,
-          epssPercentile: 0.86,
-          epssDate: day(now, 0),
-          cwe: 'CWE-22',
-          affectedJson: ['< 29.9.3'],
-          cpesJson: ['cpe:2.3:a:docker:docker:*:*:*:*:*:*:*:*'],
-          fixedVersions: '29.9.3',
-          referencesJson: ['https://docs.docker.example.org/security/'],
-          published: ago(12),
-          modified: ago(12),
-          priority: 65.9,
-          watchlistJson: ['Docker'],
-        },
-        {
-          cveId: 'CVE-2026-40531',
-          descriptionEn: 'SQL injection in a popular WordPress forms plugin.',
-          product: 'WordPress plugin',
-          cvss: 7.5,
-          cvssVersion: '3.1',
-          vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N',
-          severity: 'high',
-          epss: 0.33,
-          epssPercentile: 0.95,
-          epssDate: day(now, 0),
-          cwe: 'CWE-89',
-          ghsaId: 'GHSA-9x9x-9x9x-9x9x',
-          ghsaSeverity: 'high',
-          affectedJson: ['< 4.2.1'],
-          fixedVersions: '4.2.1',
-          referencesJson: ['https://wordpress.example.org/plugins/forms/'],
-          published: ago(40),
-          modified: ago(20),
-          priority: 64.7,
-          watchlistJson: ['WordPress'],
-        },
-      ])
-      .onConflictDoNothing()
-      .run();
-
-    ARTICLES.forEach((a, i) => {
-      const url = `https://news.example.com/${a.source}/${String(i + 1)}`;
-      const row = tx
-        .insert(items)
-        .values({
-          sourceId: a.source,
-          kind: 'article',
-          url,
-          urlHash: createHash('sha256').update(url).digest('hex'),
-          title: a.title,
-          summary: a.summary,
-          lang: a.lang,
-          publishedAt: ago(a.hoursAgo),
-          fetchedAt: ago(a.hoursAgo),
-          category: a.category,
-          clusterId: a.cluster ?? `demo-${String(i)}`,
-          hnPoints: a.hnPoints ?? null,
-          rankScore: 1,
-        })
-        .onConflictDoNothing()
-        .returning({ id: items.id })
-        .get() as { id: number } | undefined; // undefined on conflict, despite the type
-      if (row) {
-        for (const cveId of a.cves ?? [])
-          tx.insert(itemCves).values({ itemId: row.id, cveId }).onConflictDoNothing().run();
-      }
-    });
-
-    tx.insert(breaches)
-      .values({
-        name: 'NorthwindRetail',
-        title: 'Northwind Retail',
-        domain: 'northwind.example',
-        accounts: 12_400_000,
-        dataClassesJson: ['Email addresses', 'Passwords', 'Phone numbers', 'Purchases'],
-        breachDate: day(now, 21),
-        addedDate: ago(6),
-        isVerified: true,
-        isSensitive: false,
-      })
-      .onConflictDoNothing()
-      .run();
-
-    tx.insert(releases)
-      .values([
-        {
-          product: 'PHP',
-          version: '8.3.14',
-          isSecurity: true,
-          url: 'https://www.php.net/releases/8_3_14.php',
-          publishedAt: ago(26),
-        },
-        {
-          product: 'Docker',
-          version: '29.9.3',
-          isSecurity: true,
-          url: 'https://github.com/moby/moby/releases',
-          publishedAt: ago(11),
-        },
-        {
-          product: 'Node.js',
-          version: '26.13.0',
-          isSecurity: false,
-          url: 'https://nodejs.org/en/blog/release',
-          publishedAt: ago(48),
-        },
-        {
-          product: 'Python',
-          version: '3.15.2',
-          isSecurity: true,
-          url: 'https://blog.python.org/',
-          publishedAt: ago(72),
-        },
-      ])
-      .onConflictDoNothing()
-      .run();
-
-    const demoRepos = [
-      ['example/panel-demo', 'A self-hosted tech watch dashboard.', 'TypeScript', 1240, 180],
-      [
-        'example/tiny-llm',
-        'Run small language models on single-board computers.',
-        'Rust',
-        980,
-        140,
-      ],
-      ['example/feedkit', 'Safe RSS and Atom parsing for Node.js.', 'TypeScript', 610, 75],
-    ] as const;
-    for (const [fullName, description, language, stars, gained] of demoRepos) {
-      tx.insert(repos)
-        .values({
-          fullName,
-          description,
-          language,
-          url: `https://github.com/${fullName}`,
-          createdAt: ago(100),
-        })
-        .onConflictDoNothing()
-        .run();
-      tx.insert(repoStars)
+      tx.insert(cves)
         .values([
-          { fullName, day: day(now, 1), stars: stars - gained },
-          { fullName, day: day(now, 0), stars },
+          {
+            cveId: 'CVE-2026-41234',
+            descriptionEn:
+              'Out-of-bounds write in PHP before 8.3.14 and 8.2.27 allows remote code execution.',
+            product: 'PHP',
+            cvss: 9.8,
+            cvssVersion: '3.1',
+            vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',
+            severity: 'critical',
+            epss: 0.94,
+            epssPercentile: 0.998,
+            epssDate: day(now, 0),
+            kev: true,
+            kevName: 'PHP Remote Code Execution Vulnerability',
+            kevAdded: day(now, 0),
+            kevDue: day(now, -21),
+            cwe: 'CWE-787',
+            affectedJson: ['8.1.x', '8.2.0 – < 8.2.27', '8.3.0 – < 8.3.14'],
+            cpesJson: ['cpe:2.3:a:php:php:*:*:*:*:*:*:*:*'],
+            fixedVersions: '8.3.14 · 8.2.27',
+            referencesJson: [
+              'https://www.php.net/ChangeLog-8.php',
+              'https://www.cisa.gov/known-exploited-vulnerabilities-catalog',
+              'https://exploits.example.org/php-41234',
+            ],
+            hasPublicExploit: true,
+            published: ago(30),
+            modified: ago(2),
+            priority: 99.4,
+            watchlistJson: ['PHP'],
+          },
+          {
+            cveId: 'CVE-2026-40999',
+            descriptionEn: 'Authentication bypass in OpenSSH under specific PAM configurations.',
+            product: 'OpenSSH',
+            cvss: 8.1,
+            cvssVersion: '3.1',
+            vector: 'CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H',
+            severity: 'high',
+            epss: 0.61,
+            epssPercentile: 0.97,
+            epssDate: day(now, 0),
+            cwe: 'CWE-287',
+            affectedJson: ['< 9.9p2'],
+            cpesJson: ['cpe:2.3:a:openbsd:openssh:*:*:*:*:*:*:*:*'],
+            fixedVersions: '9.9p2',
+            referencesJson: ['https://www.openssh.example.org/security.html'],
+            published: ago(20),
+            modified: ago(6),
+            priority: 67.5,
+            watchlistJson: ['OpenSSH'],
+          },
+          {
+            cveId: 'CVE-2026-40712',
+            descriptionEn: 'Use-after-free in the Linux kernel allows local privilege escalation.',
+            product: 'Linux kernel',
+            cvss: 7.8,
+            cvssVersion: '3.1',
+            vector: 'CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H',
+            severity: 'high',
+            epss: 0.12,
+            epssPercentile: 0.91,
+            epssDate: day(now, 0),
+            kev: true,
+            kevName: 'Linux Kernel Use-After-Free Vulnerability',
+            kevAdded: day(now, 2),
+            kevDue: day(now, -19),
+            kevRansomware: true,
+            cwe: 'CWE-416',
+            affectedJson: ['6.1 – < 6.1.118', '6.6 – < 6.6.62'],
+            cpesJson: ['cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*'],
+            fixedVersions: '6.1.118 · 6.6.62',
+            referencesJson: ['https://kernel.example.org/stable/'],
+            published: ago(70),
+            modified: ago(30),
+            priority: 89.6,
+            watchlistJson: ['Linux'],
+          },
+          {
+            cveId: 'CVE-2026-40655',
+            descriptionEn: 'Container escape in Docker Engine through a crafted image layer.',
+            product: 'Docker',
+            cvss: 8.6,
+            cvssVersion: '3.1',
+            vector: 'CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H',
+            severity: 'high',
+            epss: 0.08,
+            epssPercentile: 0.86,
+            epssDate: day(now, 0),
+            cwe: 'CWE-22',
+            affectedJson: ['< 29.9.3'],
+            cpesJson: ['cpe:2.3:a:docker:docker:*:*:*:*:*:*:*:*'],
+            fixedVersions: '29.9.3',
+            referencesJson: ['https://docs.docker.example.org/security/'],
+            published: ago(12),
+            modified: ago(12),
+            priority: 65.9,
+            watchlistJson: ['Docker'],
+          },
+          {
+            cveId: 'CVE-2026-40531',
+            descriptionEn: 'SQL injection in a popular WordPress forms plugin.',
+            product: 'WordPress plugin',
+            cvss: 7.5,
+            cvssVersion: '3.1',
+            vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N',
+            severity: 'high',
+            epss: 0.33,
+            epssPercentile: 0.95,
+            epssDate: day(now, 0),
+            cwe: 'CWE-89',
+            ghsaId: 'GHSA-9x9x-9x9x-9x9x',
+            ghsaSeverity: 'high',
+            affectedJson: ['< 4.2.1'],
+            fixedVersions: '4.2.1',
+            referencesJson: ['https://wordpress.example.org/plugins/forms/'],
+            published: ago(40),
+            modified: ago(20),
+            priority: 64.7,
+            watchlistJson: ['WordPress'],
+          },
         ])
         .onConflictDoNothing()
         .run();
-    }
 
-    // Recent runs so Settings shows realistic health, including one slow source.
-    const sourceIds = tx
-      .select({ id: sources.id })
-      .from(sources)
-      .all()
-      .map((s) => s.id);
-    for (const sourceId of sourceIds) {
-      const slow = sourceId === 'next';
-      tx.insert(fetchRuns)
+      ARTICLES.forEach((a, i) => {
+        const url = `https://news.example.com/${a.source}/${String(i + 1)}`;
+        const row = tx
+          .insert(items)
+          .values({
+            sourceId: a.source,
+            kind: 'article',
+            url,
+            urlHash: createHash('sha256').update(url).digest('hex'),
+            title: a.title,
+            summary: a.summary,
+            lang: a.lang,
+            publishedAt: ago(a.hoursAgo),
+            fetchedAt: ago(a.hoursAgo),
+            category: a.category,
+            clusterId: a.cluster ?? `demo-${String(i)}`,
+            hnPoints: a.hnPoints ?? null,
+            rankScore: 1,
+          })
+          .onConflictDoNothing()
+          .returning({ id: items.id })
+          .get() as { id: number } | undefined; // undefined on conflict, despite the type
+        if (row) {
+          for (const cveId of a.cves ?? [])
+            tx.insert(itemCves).values({ itemId: row.id, cveId }).onConflictDoNothing().run();
+        }
+      });
+
+      tx.insert(breaches)
         .values({
-          sourceId,
-          startedAt: ago(0.5),
-          finishedAt: ago(0.49),
-          status: 'ok',
-          httpStatus: 200,
-          itemsNew: 3,
-          bytes: 48_000,
-          durationMs: slow ? 4_100 : 310,
+          name: 'NorthwindRetail',
+          title: 'Northwind Retail',
+          domain: 'northwind.example',
+          accounts: 12_400_000,
+          dataClassesJson: ['Email addresses', 'Passwords', 'Phone numbers', 'Purchases'],
+          breachDate: day(now, 21),
+          addedDate: ago(6),
+          isVerified: true,
+          isSensitive: false,
         })
+        .onConflictDoNothing()
         .run();
-    }
-    tx.update(sources).set({ health: 'healthy' }).run();
-    tx.update(sources).set({ health: 'slow' }).where(eq(sources.id, 'next')).run();
-  });
+
+      tx.insert(releases)
+        .values([
+          {
+            product: 'PHP',
+            version: '8.3.14',
+            isSecurity: true,
+            url: 'https://www.php.net/releases/8_3_14.php',
+            publishedAt: ago(26),
+          },
+          {
+            product: 'Docker',
+            version: '29.9.3',
+            isSecurity: true,
+            url: 'https://github.com/moby/moby/releases',
+            publishedAt: ago(11),
+          },
+          {
+            product: 'Node.js',
+            version: '26.13.0',
+            isSecurity: false,
+            url: 'https://nodejs.org/en/blog/release',
+            publishedAt: ago(48),
+          },
+          {
+            product: 'Python',
+            version: '3.15.2',
+            isSecurity: true,
+            url: 'https://blog.python.org/',
+            publishedAt: ago(72),
+          },
+        ])
+        .onConflictDoNothing()
+        .run();
+
+      const demoRepos = [
+        ['example/panel-demo', 'A self-hosted tech watch dashboard.', 'TypeScript', 1240, 180],
+        [
+          'example/tiny-llm',
+          'Run small language models on single-board computers.',
+          'Rust',
+          980,
+          140,
+        ],
+        ['example/feedkit', 'Safe RSS and Atom parsing for Node.js.', 'TypeScript', 610, 75],
+      ] as const;
+      for (const [fullName, description, language, stars, gained] of demoRepos) {
+        tx.insert(repos)
+          .values({
+            fullName,
+            description,
+            language,
+            url: `https://github.com/${fullName}`,
+            createdAt: ago(100),
+          })
+          .onConflictDoNothing()
+          .run();
+        tx.insert(repoStars)
+          .values([
+            { fullName, day: day(now, 1), stars: stars - gained },
+            { fullName, day: day(now, 0), stars },
+          ])
+          .onConflictDoNothing()
+          .run();
+      }
+
+      // Recent runs so Settings shows realistic health, including one slow source.
+      const sourceIds = tx
+        .select({ id: sources.id })
+        .from(sources)
+        .all()
+        .map((s) => s.id);
+      for (const sourceId of sourceIds) {
+        const slow = sourceId === 'next';
+        tx.insert(fetchRuns)
+          .values({
+            sourceId,
+            startedAt: ago(0.5),
+            finishedAt: ago(0.49),
+            status: 'ok',
+            httpStatus: 200,
+            itemsNew: 3,
+            bytes: 48_000,
+            durationMs: slow ? 4_100 : 310,
+          })
+          .run();
+      }
+      tx.update(sources).set({ health: 'healthy' }).run();
+      tx.update(sources).set({ health: 'slow' }).where(eq(sources.id, 'next')).run();
+    },
+    { behavior: 'immediate' },
+  );
 }

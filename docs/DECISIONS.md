@@ -326,3 +326,10 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 
 - **Date:** 2026-11-09
 - **Decision:** A `docker` CI job builds the three images, starts the stack with throw-away secrets and runs `deploy/scripts/check.sh` on GitHub-hosted `ubuntu-24.04` (amd64) and `ubuntu-24.04-arm` (arm64) runners. The check covers user, read-only root, capabilities, `no-new-privileges`, limits, health, published ports, database file mode, HTTP→HTTPS, headers and the 401 without a session. The same script runs on the server after a deployment. No self-hosted runner is involved.
+
+## ADR-044 — Write transactions are BEGIN IMMEDIATE
+
+- **Date:** 2026-11-09
+- **Context:** The first run of the Docker stack failed `/api/auth/setup` with `database is locked` within 110 ms, despite `busy_timeout = 5000`. The API and the collector write the same WAL database. A deferred transaction (`BEGIN`) that reads and then writes after the other process committed cannot upgrade its snapshot, and SQLite returns `SQLITE_BUSY` at once without calling the busy handler. The single-process tests could not show it.
+- **Decision:** Every Drizzle transaction passes `{ behavior: 'immediate' }`, so it takes the write lock at `BEGIN` and waits up to `busy_timeout` for the other writer. A source test fails if a `.transaction(` call lacks it. Single statements outside transactions already wait through `busy_timeout`.
+- **Also:** the Playwright suite can target a deployed stack (`PANEL_E2E_URL`, `PANEL_E2E_SETUP_TOKEN`), which is how this was found. The custom-source test is skipped there because it needs the fake network.

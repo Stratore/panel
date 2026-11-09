@@ -272,10 +272,13 @@ export function registerAdminRoutes(app: FastifyInstance, deps: AdminDeps): void
 
   app.put('/api/prefs', (request, reply) => {
     const body = parseInput(prefsPutBodySchema, request.body);
-    db.transaction((tx) => {
-      if (body.prefs) writePrefs(tx, body.prefs);
-      if (body.watchlist) replaceWatchlist(tx, body.watchlist);
-    });
+    db.transaction(
+      (tx) => {
+        if (body.prefs) writePrefs(tx, body.prefs);
+        if (body.watchlist) replaceWatchlist(tx, body.watchlist);
+      },
+      { behavior: 'immediate' },
+    );
     return sendJson(reply, prefsDtoSchema, prefsDto());
   });
 
@@ -308,28 +311,31 @@ export function registerAdminRoutes(app: FastifyInstance, deps: AdminDeps): void
   app.post('/api/import', { bodyLimit: 512 * 1024 }, (request, reply) => {
     const data = parseInput(exportDtoSchema, request.body);
     const now = deps.now();
-    db.transaction((tx) => {
-      writePrefs(tx, data.prefs);
-      replaceWatchlist(tx, data.watchlist);
-      const known = new Set(
-        tx
-          .select({ url: sources.url })
-          .from(sources)
-          .all()
-          .map((s) => s.url),
-      );
-      const customCount =
-        tx.select({ n: count() }).from(sources).where(eq(sources.isCustom, true)).get()?.n ?? 0;
-      let room = MAX_CUSTOM_SOURCES - customCount;
-      // Imported URLs are not fetched here; the collector reaches them through safeFetch's
-      // strictest (custom) policy, like any user source.
-      for (const source of data.customSources) {
-        if (known.has(source.url) || room <= 0) continue;
-        insertCustomSource(tx, source, now);
-        known.add(source.url);
-        room--;
-      }
-    });
+    db.transaction(
+      (tx) => {
+        writePrefs(tx, data.prefs);
+        replaceWatchlist(tx, data.watchlist);
+        const known = new Set(
+          tx
+            .select({ url: sources.url })
+            .from(sources)
+            .all()
+            .map((s) => s.url),
+        );
+        const customCount =
+          tx.select({ n: count() }).from(sources).where(eq(sources.isCustom, true)).get()?.n ?? 0;
+        let room = MAX_CUSTOM_SOURCES - customCount;
+        // Imported URLs are not fetched here; the collector reaches them through safeFetch's
+        // strictest (custom) policy, like any user source.
+        for (const source of data.customSources) {
+          if (known.has(source.url) || room <= 0) continue;
+          insertCustomSource(tx, source, now);
+          known.add(source.url);
+          room--;
+        }
+      },
+      { behavior: 'immediate' },
+    );
     return sendJson(reply, prefsDtoSchema, prefsDto());
   });
 

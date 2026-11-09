@@ -25,6 +25,9 @@ export function openDatabase(file: string, options: { readonly?: boolean } = {})
   const sqlite = new Database(file, { readonly, fileMustExist: readonly });
   if (!readonly) sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
+  // The API and the collector write the same file: waits up to 5 s for the other writer.
+  // Write transactions must use behavior 'immediate' (BEGIN IMMEDIATE): a deferred one that
+  // reads, then writes after the other process committed, fails at once (ADR-044).
   sqlite.pragma('busy_timeout = 5000');
   sqlite.pragma('synchronous = NORMAL');
   if (file !== ':memory:' && !readonly && process.platform !== 'win32') {

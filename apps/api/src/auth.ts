@@ -188,23 +188,30 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
         throw new HttpProblem(403, 'Forbidden', 'Invalid setup token.');
 
       const passphraseHash = await hashPassphrase(body.passphrase);
-      const userId = deps.db.transaction((tx) => {
-        // Re-checked inside the transaction: two concurrent setups cannot both succeed.
-        if ((tx.select({ n: count() }).from(users).get()?.n ?? 0) > 0) return null;
-        const user = tx.insert(users).values({ passphraseHash }).returning({ id: users.id }).get();
-        const current = tx.select().from(prefs).where(eq(prefs.key, 'prefs')).get();
-        const base = prefsSchema.safeParse(current?.valueJson);
-        const value = {
-          ...(base.success ? base.data : DEFAULT_PREFS),
-          displayName: body.displayName,
-          lang: body.lang,
-        };
-        tx.insert(prefs)
-          .values({ key: 'prefs', valueJson: value })
-          .onConflictDoUpdate({ target: prefs.key, set: { valueJson: value } })
-          .run();
-        return user.id;
-      });
+      const userId = deps.db.transaction(
+        (tx) => {
+          // Re-checked inside the transaction: two concurrent setups cannot both succeed.
+          if ((tx.select({ n: count() }).from(users).get()?.n ?? 0) > 0) return null;
+          const user = tx
+            .insert(users)
+            .values({ passphraseHash })
+            .returning({ id: users.id })
+            .get();
+          const current = tx.select().from(prefs).where(eq(prefs.key, 'prefs')).get();
+          const base = prefsSchema.safeParse(current?.valueJson);
+          const value = {
+            ...(base.success ? base.data : DEFAULT_PREFS),
+            displayName: body.displayName,
+            lang: body.lang,
+          };
+          tx.insert(prefs)
+            .values({ key: 'prefs', valueJson: value })
+            .onConflictDoUpdate({ target: prefs.key, set: { valueJson: value } })
+            .run();
+          return user.id;
+        },
+        { behavior: 'immediate' },
+      );
       if (userId === null)
         throw new HttpProblem(409, 'Conflict', 'This instance is already set up.');
       startSession(reply, request, deps, userId);

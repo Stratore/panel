@@ -52,3 +52,21 @@ describe('source hygiene', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe('database transactions', () => {
+  it('are all BEGIN IMMEDIATE (two processes write the same SQLite file)', () => {
+    // A deferred transaction that reads and then writes fails at once with SQLITE_BUSY when the
+    // other process committed in between: busy_timeout does not apply to that upgrade.
+    const offenders: string[] = [];
+    for (const dir of ['apps', 'packages']) {
+      for (const file of walk(join(ROOT, dir))) {
+        if (!file.endsWith('.ts') || file.endsWith('.test.ts')) continue;
+        const text = readFileSync(file, 'utf8');
+        const calls = text.match(/\.transaction\(/g)?.length ?? 0;
+        const immediate = text.match(/behavior: 'immediate'/g)?.length ?? 0;
+        if (calls !== immediate) offenders.push(file.slice(ROOT.length));
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});

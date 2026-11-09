@@ -27,42 +27,45 @@ const utcDay = (date: Date) => date.toISOString().slice(0, 10);
 
 /** Daily purge. Deleting items cascades to `item_cves`; triggers keep `items_fts` in sync. */
 export function purgeExpired(db: PanelDb, now = new Date()): PurgeResult {
-  return db.transaction((tx) => {
-    const itemsCutoff = daysBefore(now, RETENTION_DAYS.items);
-    const cvesCutoff = daysBefore(now, RETENTION_DAYS.cves);
-    return {
-      items: tx
-        .delete(items)
-        .where(and(lt(items.publishedAt, itemsCutoff), lt(items.fetchedAt, itemsCutoff)))
-        .run().changes,
-      cves: tx
-        .delete(cves)
-        .where(
-          and(
-            eq(cves.kev, false),
-            lt(sql`coalesce(${cves.published}, ${cves.modified}, 0)`, cvesCutoff.getTime()),
-          ),
-        )
-        .run().changes,
-      fetchRuns: tx
-        .delete(fetchRuns)
-        .where(lt(fetchRuns.startedAt, daysBefore(now, RETENTION_DAYS.fetchRuns)))
-        .run().changes,
-      alertsSent: tx
-        .delete(alertsSent)
-        .where(lt(alertsSent.sentAt, daysBefore(now, RETENTION_DAYS.alertsSent)))
-        .run().changes,
-      repoStars: tx
-        .delete(repoStars)
-        .where(lt(repoStars.day, utcDay(daysBefore(now, RETENTION_DAYS.repoStars))))
-        .run().changes,
-      sessions: tx.delete(sessions).where(lt(sessions.expiresAt, now)).run().changes,
-      events: tx
-        .delete(events)
-        .where(lt(events.createdAt, daysBefore(now, RETENTION_DAYS.events)))
-        .run().changes,
-    };
-  });
+  return db.transaction(
+    (tx) => {
+      const itemsCutoff = daysBefore(now, RETENTION_DAYS.items);
+      const cvesCutoff = daysBefore(now, RETENTION_DAYS.cves);
+      return {
+        items: tx
+          .delete(items)
+          .where(and(lt(items.publishedAt, itemsCutoff), lt(items.fetchedAt, itemsCutoff)))
+          .run().changes,
+        cves: tx
+          .delete(cves)
+          .where(
+            and(
+              eq(cves.kev, false),
+              lt(sql`coalesce(${cves.published}, ${cves.modified}, 0)`, cvesCutoff.getTime()),
+            ),
+          )
+          .run().changes,
+        fetchRuns: tx
+          .delete(fetchRuns)
+          .where(lt(fetchRuns.startedAt, daysBefore(now, RETENTION_DAYS.fetchRuns)))
+          .run().changes,
+        alertsSent: tx
+          .delete(alertsSent)
+          .where(lt(alertsSent.sentAt, daysBefore(now, RETENTION_DAYS.alertsSent)))
+          .run().changes,
+        repoStars: tx
+          .delete(repoStars)
+          .where(lt(repoStars.day, utcDay(daysBefore(now, RETENTION_DAYS.repoStars))))
+          .run().changes,
+        sessions: tx.delete(sessions).where(lt(sessions.expiresAt, now)).run().changes,
+        events: tx
+          .delete(events)
+          .where(lt(events.createdAt, daysBefore(now, RETENTION_DAYS.events)))
+          .run().changes,
+      };
+    },
+    { behavior: 'immediate' },
+  );
 }
 
 /** Weekly maintenance: rebuilds the FTS index segments and compacts the file. */

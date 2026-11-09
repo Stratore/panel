@@ -76,160 +76,167 @@ export function processItems(
   deps: PipelineDeps,
   now: Date,
 ): PipelineResult {
-  return db.transaction((tx) => {
-    const result: PipelineResult = { inserted: 0, updated: 0, newCves: 0, events: 0 };
-    const emit = (type: 'item.new' | 'cve.updated', payload: Record<string, unknown>) => {
-      tx.insert(events).values({ type, payloadJson: payload, createdAt: now }).run();
-      result.events++;
-    };
-    const cveChanges: CveChange[] = [];
-    let candidates: ClusterCandidate[] | null = null;
+  return db.transaction(
+    (tx) => {
+      const result: PipelineResult = { inserted: 0, updated: 0, newCves: 0, events: 0 };
+      const emit = (type: 'item.new' | 'cve.updated', payload: Record<string, unknown>) => {
+        tx.insert(events).values({ type, payloadJson: payload, createdAt: now }).run();
+        result.events++;
+      };
+      const cveChanges: CveChange[] = [];
+      let candidates: ClusterCandidate[] | null = null;
 
-    for (const item of batch) {
-      switch (item.kind) {
-        case 'article': {
-          candidates ??= loadClusterCandidates(tx, batch, now);
-          const stored = storeArticle(tx, source, item, deps, candidates, now);
-          if (stored === 'updated') result.updated++;
-          if (stored !== null && stored !== 'updated') {
-            result.inserted++;
-            emit('item.new', stored);
-          }
-          break;
-        }
-        case 'release': {
-          const inserted = tx
-            .insert(releases)
-            .values({
-              product: item.product,
-              version: item.version,
-              isSecurity: item.isSecurity,
-              url: item.url,
-              publishedAt: new Date(item.publishedAt),
-            })
-            .onConflictDoNothing()
-            .run().changes;
-          if (inserted > 0) {
-            result.inserted++;
-            emit('item.new', {
-              kind: 'release',
-              product: item.product,
-              version: item.version,
-              isSecurity: item.isSecurity,
-              url: item.url,
-            });
-          }
-          break;
-        }
-        case 'breach': {
-          const existed = tx
-            .select({ name: breaches.name })
-            .from(breaches)
-            .where(eq(breaches.name, item.name))
-            .get();
-          const fields = {
-            title: item.title,
-            domain: item.domain,
-            accounts: item.accounts,
-            dataClassesJson: item.dataClasses,
-            breachDate: item.breachDate,
-            addedDate: new Date(item.addedDate),
-            isVerified: item.isVerified,
-            isSensitive: item.isSensitive,
-          };
-          tx.insert(breaches)
-            .values({ name: item.name, ...fields })
-            .onConflictDoUpdate({ target: breaches.name, set: fields })
-            .run();
-          if (existed === undefined) {
-            result.inserted++;
-            emit('item.new', {
-              kind: 'breach',
-              name: item.name,
-              title: item.title,
-              accounts: item.accounts,
-            });
-          } else {
-            result.updated++;
-          }
-          break;
-        }
-        case 'repo': {
-          const fields = {
-            description: item.description,
-            language: item.language,
-            url: item.url,
-            createdAt: new Date(item.createdAt),
-          };
-          const existed = tx
-            .select({ n: repos.fullName })
-            .from(repos)
-            .where(eq(repos.fullName, item.fullName))
-            .get();
-          tx.insert(repos)
-            .values({ fullName: item.fullName, ...fields })
-            .onConflictDoUpdate({ target: repos.fullName, set: fields })
-            .run();
-          tx.insert(repoStars)
-            .values({
-              fullName: item.fullName,
-              day: now.toISOString().slice(0, 10),
-              stars: item.stars,
-            })
-            .onConflictDoUpdate({
-              target: [repoStars.fullName, repoStars.day],
-              set: { stars: item.stars },
-            })
-            .run();
-          if (existed === undefined) result.inserted++;
-          else result.updated++;
-          break;
-        }
-        case 'cve': {
-          const change = upsertNvdCve(tx, item);
-          cveChanges.push(change);
-          if (change.isNew) {
-            result.inserted++;
-            result.newCves++;
-            const fresh = now.getTime() - Date.parse(item.published) <= LIVE_CVE_MAX_AGE_MS;
-            if (fresh && item.severity !== null && LIVE_SEVERITIES.has(item.severity)) {
-              emit('cve.updated', { cveId: item.cveId, severity: item.severity, cvss: item.cvss });
+      for (const item of batch) {
+        switch (item.kind) {
+          case 'article': {
+            candidates ??= loadClusterCandidates(tx, batch, now);
+            const stored = storeArticle(tx, source, item, deps, candidates, now);
+            if (stored === 'updated') result.updated++;
+            if (stored !== null && stored !== 'updated') {
+              result.inserted++;
+              emit('item.new', stored);
             }
-          } else {
-            result.updated++;
+            break;
           }
-          break;
-        }
-        case 'cve-kev': {
-          const change = applyKevPatch(tx, item, now);
-          cveChanges.push(change);
-          if (change.isNew) result.newCves++;
-          if (change.kevAdded)
-            emit('cve.updated', { cveId: item.cveId, kevAdded: true, product: item.product });
-          result.updated++;
-          break;
-        }
-        case 'cve-epss': {
-          const change = applyEpssPatch(tx, item);
-          if (change) {
+          case 'release': {
+            const inserted = tx
+              .insert(releases)
+              .values({
+                product: item.product,
+                version: item.version,
+                isSecurity: item.isSecurity,
+                url: item.url,
+                publishedAt: new Date(item.publishedAt),
+              })
+              .onConflictDoNothing()
+              .run().changes;
+            if (inserted > 0) {
+              result.inserted++;
+              emit('item.new', {
+                kind: 'release',
+                product: item.product,
+                version: item.version,
+                isSecurity: item.isSecurity,
+                url: item.url,
+              });
+            }
+            break;
+          }
+          case 'breach': {
+            const existed = tx
+              .select({ name: breaches.name })
+              .from(breaches)
+              .where(eq(breaches.name, item.name))
+              .get();
+            const fields = {
+              title: item.title,
+              domain: item.domain,
+              accounts: item.accounts,
+              dataClassesJson: item.dataClasses,
+              breachDate: item.breachDate,
+              addedDate: new Date(item.addedDate),
+              isVerified: item.isVerified,
+              isSensitive: item.isSensitive,
+            };
+            tx.insert(breaches)
+              .values({ name: item.name, ...fields })
+              .onConflictDoUpdate({ target: breaches.name, set: fields })
+              .run();
+            if (existed === undefined) {
+              result.inserted++;
+              emit('item.new', {
+                kind: 'breach',
+                name: item.name,
+                title: item.title,
+                accounts: item.accounts,
+              });
+            } else {
+              result.updated++;
+            }
+            break;
+          }
+          case 'repo': {
+            const fields = {
+              description: item.description,
+              language: item.language,
+              url: item.url,
+              createdAt: new Date(item.createdAt),
+            };
+            const existed = tx
+              .select({ n: repos.fullName })
+              .from(repos)
+              .where(eq(repos.fullName, item.fullName))
+              .get();
+            tx.insert(repos)
+              .values({ fullName: item.fullName, ...fields })
+              .onConflictDoUpdate({ target: repos.fullName, set: fields })
+              .run();
+            tx.insert(repoStars)
+              .values({
+                fullName: item.fullName,
+                day: now.toISOString().slice(0, 10),
+                stars: item.stars,
+              })
+              .onConflictDoUpdate({
+                target: [repoStars.fullName, repoStars.day],
+                set: { stars: item.stars },
+              })
+              .run();
+            if (existed === undefined) result.inserted++;
+            else result.updated++;
+            break;
+          }
+          case 'cve': {
+            const change = upsertNvdCve(tx, item);
             cveChanges.push(change);
-            result.updated++;
+            if (change.isNew) {
+              result.inserted++;
+              result.newCves++;
+              const fresh = now.getTime() - Date.parse(item.published) <= LIVE_CVE_MAX_AGE_MS;
+              if (fresh && item.severity !== null && LIVE_SEVERITIES.has(item.severity)) {
+                emit('cve.updated', {
+                  cveId: item.cveId,
+                  severity: item.severity,
+                  cvss: item.cvss,
+                });
+              }
+            } else {
+              result.updated++;
+            }
+            break;
           }
-          break;
-        }
-        case 'cve-ghsa': {
-          const change = applyGhsaPatch(tx, item);
-          cveChanges.push(change);
-          if (change.isNew) result.newCves++;
-          result.updated++;
-          break;
+          case 'cve-kev': {
+            const change = applyKevPatch(tx, item, now);
+            cveChanges.push(change);
+            if (change.isNew) result.newCves++;
+            if (change.kevAdded)
+              emit('cve.updated', { cveId: item.cveId, kevAdded: true, product: item.product });
+            result.updated++;
+            break;
+          }
+          case 'cve-epss': {
+            const change = applyEpssPatch(tx, item);
+            if (change) {
+              cveChanges.push(change);
+              result.updated++;
+            }
+            break;
+          }
+          case 'cve-ghsa': {
+            const change = applyGhsaPatch(tx, item);
+            cveChanges.push(change);
+            if (change.isNew) result.newCves++;
+            result.updated++;
+            break;
+          }
         }
       }
-    }
 
-    refreshPriorities(tx, [...new Set(cveChanges.map((c) => c.cveId))], deps.watchlist);
-    return result;
-  });
+      refreshPriorities(tx, [...new Set(cveChanges.map((c) => c.cveId))], deps.watchlist);
+      return result;
+    },
+    { behavior: 'immediate' },
+  );
 }
 
 function loadClusterCandidates(

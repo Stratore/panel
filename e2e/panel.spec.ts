@@ -7,6 +7,9 @@ import { expect, test, type Page } from '@playwright/test';
 test.describe.configure({ mode: 'serial' });
 
 const PASSPHRASE = 'e2e passphrase for tests only';
+// Against a deployed stack (PANEL_E2E_URL), the token is the one from its .env.
+const SETUP_TOKEN = process.env['PANEL_E2E_SETUP_TOKEN'] ?? 'e2e-setup-token';
+const DEPLOYED = process.env['PANEL_E2E_URL'] !== undefined;
 const STATE = 'test-results/.session.json';
 const PAGES = ['/', '/brief', '/threats', '/breaches', '/releases', '/settings'] as const;
 
@@ -42,7 +45,7 @@ test('first run: setup creates the account and opens the Journal', async ({ page
   const violations = await watchViolations(page);
   await page.goto('/');
   await expect(page).toHaveURL(/\/setup$/);
-  await page.getByLabel('Setup token').fill('e2e-setup-token');
+  await page.getByLabel('Setup token').fill(SETUP_TOKEN);
   await page.getByLabel('Passphrase', { exact: true }).fill(PASSPHRASE);
   await page.getByLabel('Confirm passphrase').fill(PASSPHRASE);
   await page.getByLabel('Your first name (optional)').fill('Ada');
@@ -96,6 +99,7 @@ test.describe('signed in', () => {
   });
 
   test('a custom source is validated before it can be added', async ({ page }) => {
+    test.skip(DEPLOYED, 'needs the fake network of e2e/serve-demo.mjs');
     await page.goto('/settings/sources');
     const add = page.getByRole('button', { name: 'Add to my sources' });
     await expect(add).toBeDisabled();

@@ -188,8 +188,11 @@ export function refreshAllPriorities(db: PanelDb, watchlist: readonly WatchlistE
     .from(cves)
     .all()
     .map((row) => row.cveId);
-  db.transaction((tx) => {
-    refreshPriorities(tx, ids, watchlist);
-  });
+  db.transaction(
+    (tx) => {
+      refreshPriorities(tx, ids, watchlist);
+    },
+    { behavior: 'immediate' },
+  );
   return ids.length;
 }

@@ -97,3 +97,14 @@ All three: `read_only`, `cap_drop: [ALL]`, `no-new-privileges`, user `10001:1000
 and CPU limits, healthchecks, `restart: unless-stopped`, rotated JSON logs. `internal` has no
 route outside; `egress` is used only through `safeFetch`, which refuses private and Docker
 addresses.
+
+## End-to-end tests against a stack
+
+On a fresh stack (the suite performs the first-run setup), from a development checkout:
+
+```bash
+PANEL_E2E_URL=https://<PANEL_HOST> PANEL_E2E_SETUP_TOKEN=<SETUP_TOKEN from .env> pnpm e2e
+```
+
+The test account it creates uses a passphrase published in the repository: reset the stack
+afterwards (`docker compose down -v`) before real use.

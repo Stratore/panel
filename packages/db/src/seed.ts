@@ -32,66 +32,69 @@ export interface SeedResult {
  * - default prefs are inserted only when none exist.
  */
 export function seedDatabase(db: PanelDb, catalog: SourcesCatalog, now = new Date()): SeedResult {
-  return db.transaction((tx) => {
-    for (const source of catalog.sources) {
-      const catalogFields = {
-        name: source.name,
-        group: source.group,
-        kind: source.kind,
-        adapter: source.adapter,
-        url: source.url,
-        lang: source.lang,
-        categoryDefault: source.category,
-        product: source.product ?? null,
-        schedule: source.schedule,
-        weight: source.weight,
-        updatedAt: now,
+  return db.transaction(
+    (tx) => {
+      for (const source of catalog.sources) {
+        const catalogFields = {
+          name: source.name,
+          group: source.group,
+          kind: source.kind,
+          adapter: source.adapter,
+          url: source.url,
+          lang: source.lang,
+          categoryDefault: source.category,
+          product: source.product ?? null,
+          schedule: source.schedule,
+          weight: source.weight,
+          updatedAt: now,
+        };
+        tx.insert(sources)
+          .values({
+            id: source.id,
+            ...catalogFields,
+            enabled: source.enabled,
+            isCustom: false,
+            createdAt: now,
+          })
+          .onConflictDoUpdate({
+            target: sources.id,
+            set: catalogFields,
+            setWhere: eq(sources.isCustom, false),
+          })
+          .run();
+      }
+
+      const watchlistCount =
+        tx
+          .select({ n: sql<number>`count(*)` })
+          .from(watchlist)
+          .get()?.n ?? 0;
+      if (watchlistCount === 0) {
+        tx.insert(watchlist)
+          .values(
+            DEFAULT_WATCHLIST.map((entry) => ({
+              id: entry.id,
+              label: entry.label,
+              keywordsJson: entry.keywords,
+              cpePatternsJson: entry.cpePatterns,
+              enabled: entry.enabled,
+            })),
+          )
+          .run();
+      }
+
+      const prefsInsert = tx
+        .insert(prefs)
+        .values({ key: PREFS_KEY, valueJson: DEFAULT_PREFS })
+        .onConflictDoNothing()
+        .run();
+
+      return {
+        sources: catalog.sources.length,
+        watchlistSeeded: watchlistCount === 0,
+        prefsSeeded: prefsInsert.changes > 0,
       };
-      tx.insert(sources)
-        .values({
-          id: source.id,
-          ...catalogFields,
-          enabled: source.enabled,
-          isCustom: false,
-          createdAt: now,
-        })
-        .onConflictDoUpdate({
-          target: sources.id,
-          set: catalogFields,
-          setWhere: eq(sources.isCustom, false),
-        })
-        .run();
-    }
-
-    const watchlistCount =
-      tx
-        .select({ n: sql<number>`count(*)` })
-        .from(watchlist)
-        .get()?.n ?? 0;
-    if (watchlistCount === 0) {
-      tx.insert(watchlist)
-        .values(
-          DEFAULT_WATCHLIST.map((entry) => ({
-            id: entry.id,
-            label: entry.label,
-            keywordsJson: entry.keywords,
-            cpePatternsJson: entry.cpePatterns,
-            enabled: entry.enabled,
-          })),
-        )
-        .run();
-    }
-
-    const prefsInsert = tx
-      .insert(prefs)
-      .values({ key: PREFS_KEY, valueJson: DEFAULT_PREFS })
-      .onConflictDoNothing()
-      .run();
-
-    return {
-      sources: catalog.sources.length,
-      watchlistSeeded: watchlistCount === 0,
-      prefsSeeded: prefsInsert.changes > 0,
-    };
-  });
+    },
+    { behavior: 'immediate' },
+  );
 }

@@ -166,34 +166,37 @@ export async function runSource(
         : durationMs >= BREAKER.slowMs
           ? 'slow'
           : 'healthy';
-    db.transaction((tx) => {
-      tx.insert(fetchRuns)
-        .values({
-          sourceId,
-          startedAt,
-          finishedAt,
-          status,
-          httpStatus: fields.httpStatus ?? null,
-          itemsNew: fields.itemsNew ?? 0,
-          bytes: fields.bytes ?? 0,
-          durationMs,
-          error: fields.error ?? null,
-        })
-        .run();
-      tx.update(sources)
-        .set({ health, consecutiveFailures: failures, updatedAt: finishedAt })
-        .where(eq(sources.id, sourceId))
-        .run();
-      if (health !== row.health) {
-        tx.insert(events)
+    db.transaction(
+      (tx) => {
+        tx.insert(fetchRuns)
           .values({
-            type: 'source.health',
-            payloadJson: { sourceId, health },
-            createdAt: finishedAt,
+            sourceId,
+            startedAt,
+            finishedAt,
+            status,
+            httpStatus: fields.httpStatus ?? null,
+            itemsNew: fields.itemsNew ?? 0,
+            bytes: fields.bytes ?? 0,
+            durationMs,
+            error: fields.error ?? null,
           })
           .run();
-      }
-    });
+        tx.update(sources)
+          .set({ health, consecutiveFailures: failures, updatedAt: finishedAt })
+          .where(eq(sources.id, sourceId))
+          .run();
+        if (health !== row.health) {
+          tx.insert(events)
+            .values({
+              type: 'source.health',
+              payloadJson: { sourceId, health },
+              createdAt: finishedAt,
+            })
+            .run();
+        }
+      },
+      { behavior: 'immediate' },
+    );
     return health;
   };
 
