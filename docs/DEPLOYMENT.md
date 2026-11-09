@@ -55,7 +55,7 @@ desktop, plus Start-menu entries to stop, update and back up. The icon:
 
 Ports 80 and 443 are bound to 127.0.0.1 inside WSL and forwarded to Windows' `localhost` only:
 other devices on the network cannot reach Panel. The certificate comes from Caddy's local
-authority; to remove the browser warning, run `deploy\windows\trust-certificate.ps1` yourself
+authority; to remove the browser warning, open **Panel - Certificat** in the Start menu yourself
 (it adds that authority to your Windows account's trusted roots after a Windows confirmation).
 
 ## TLS
