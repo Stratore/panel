@@ -2,7 +2,7 @@ import cookie from '@fastify/cookie';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyInstance } from 'fastify';
-import type { PanelDb } from '@panel/db';
+import type { DatabaseHandle, PanelDb } from '@panel/db';
 import type { SafeFetch } from '@panel/safe-fetch';
 import { CSP_DIRECTIVES } from '@panel/shared';
 import {
@@ -30,6 +30,8 @@ export interface AppDeps {
   now?: () => Date;
   /** Delay applied to failed logins (tests pass a no-op). */
   authDelay?: (ms: number) => Promise<void>;
+  /** Raw SQLite handle for online backups (Settings › Data). */
+  sqlite?: DatabaseHandle['sqlite'];
 }
 
 /** CSP of SPEC § 9.2, shared with Vite and Caddy (helmet wants mutable arrays). */
@@ -92,6 +94,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     alerts: deps.alerts,
     version: deps.version ?? '0.0.0',
     startedAt: now(),
+    sqlite: deps.sqlite,
   });
   registerStream(app, auth);
   return app;

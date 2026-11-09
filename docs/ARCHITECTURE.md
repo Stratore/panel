@@ -91,6 +91,14 @@ Pure, dependency-light domain logic (Zod only), usable from Node and the browser
 | `lib/i18n.ts`, `i18n/*.json`   | EN/FR catalogs, `Intl` date, relative time and number formatting                                                    |
 | `lib/theme.ts`                 | Theme and motion (pause, reduced motion)                                                                            |
 | `components/`                  | `pn-app-shell` (route guard, layout), `pn-header`, `pn-tabbar`, `pn-offline-banner`, icons, skeletons, empty states |
-| `pages/`                       | Login, setup (strength meter), placeholders until Phase 7, 404                                                      |
+| `pages/`                       | Login, setup, Journal, Brief, Threats, Breaches, Releases, Settings (5 tabs), 404                                   |
+| `components/drawer.ts`         | CVE detail dialog (focus trap, keyboard, swipe), deep-linked from `/threats/:id`                                    |
+| `components/palette.ts`        | ⌘K search and `>` commands                                                                                          |
+| `lib/motion.ts`, `lib/data.ts` | Pausable timers and count-ups; stale-while-revalidate views over the LocalStorage cache                             |
+| `scripts/check-bundle.mjs`     | Build guard: 60 KB gzipped budget, no Zod in the browser                                                            |
 | `styles/`                      | Tokens (light/dark, severity, sections), self-hosted fonts, base and shell styles                                   |
 | `public/`                      | Manifest, icons, hand-written Service Worker                                                                        |
+
+## End-to-end tests (`e2e/`)
+
+`playwright.config.ts` starts two servers: `e2e/serve-demo.mjs` (the built API on a temporary database with the fictional demo seed, fake network) on port 3100, and `vite preview` of the built front-end on port 4174 with the production security headers, proxying `/api`. Run `pnpm build && pnpm e2e`.

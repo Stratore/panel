@@ -78,6 +78,7 @@ export async function createTestApp(
   const clock = { now: options.now ?? new Date('2026-11-02T21:00:00Z') };
   const app = await buildApp({
     db: handle.db,
+    sqlite: handle.sqlite,
     safeFetch: fakeSafeFetch,
     alerts: options.alerts ?? noAlerts({ discord: false, telegram: false }),
     sessionSecret: SESSION_SECRET,

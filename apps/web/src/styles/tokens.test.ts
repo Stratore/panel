@@ -67,6 +67,8 @@ const PAIRS: readonly [string, string, string][] = [
   ['--text', '--card', '--card'],
   ['--sub', '--bg', '--bg'],
   ['--sub', '--card', '--card'],
+  ['--sub', '--seg', '--bg'],
+  ['--sub', '--subtle', '--card'],
   ['--accent-fg', '--accent-bg', '--card'],
   ['--accent-fg', '--card', '--card'],
   ['--inv-text', '--inv', '--inv'],
@@ -82,6 +84,7 @@ const PAIRS: readonly [string, string, string][] = [
     (c): [string, string, string][] => [
       [`--cat-${c}-fg`, `--cat-${c}-bg`, '--card'],
       [`--cat-${c}-fg`, '--card', '--card'],
+      [`--cat-${c}-inv`, '--inv', '--inv'],
     ],
   ),
 ];

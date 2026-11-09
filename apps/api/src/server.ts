@@ -15,6 +15,7 @@ migrateDatabase(handle.db);
 
 const app = await buildApp({
   db: handle.db,
+  sqlite: handle.sqlite,
   safeFetch,
   alerts: noAlerts(config.channels),
   sessionSecret: config.sessionSecret,

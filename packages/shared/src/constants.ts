@@ -24,3 +24,8 @@ export const LIMITS = {
   searchQueryLength: 100,
   cveIdsPerItem: 50,
 } as const;
+
+/** Constants used by the browser live here, apart from the Zod schemas (bundle size, ADR-031). */
+export const PASSPHRASE_MIN = 12;
+export const CVE_FILTERS = ['all', 'kev', 'watchlist', 'critical', 'high'] as const;
+export const CVE_SORTS = ['priority', 'newest', 'cvss', 'epss'] as const;

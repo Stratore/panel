@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CATEGORIES, LIMITS } from './constants.js';
+import { CATEGORIES, CVE_FILTERS, CVE_SORTS, LIMITS, PASSPHRASE_MIN } from './constants.js';
 import {
   alertThresholdsSchema,
   categorySchema,
@@ -24,7 +24,6 @@ const nullableIso = isoDateTimeSchema.nullable();
 // Auth
 // ------------------------------------------------------------------------------------------
 
-export const PASSPHRASE_MIN = 12;
 const passphrase = z.string().min(PASSPHRASE_MIN).max(1024);
 
 export const setupBodySchema = z.strictObject({
@@ -218,9 +217,6 @@ export const itemsQuerySchema = z.strictObject({
   cursor,
   limit,
 });
-
-export const CVE_FILTERS = ['all', 'kev', 'watchlist', 'critical', 'high'] as const;
-export const CVE_SORTS = ['priority', 'newest', 'cvss', 'epss'] as const;
 
 export const cvesQuerySchema = z.strictObject({
   /** Comma-separated, cumulative: `kev,watchlist`. */

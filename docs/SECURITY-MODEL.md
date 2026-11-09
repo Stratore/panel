@@ -58,3 +58,13 @@ Every outbound request goes through `packages/safe-fetch`. ESLint forbids `fetch
 | Service Worker hijack         | Single Trusted Types policy that only accepts `/sw.js`; the worker caches same-origin GETs only, never `/api/auth`, `/api/stream` or `/api/export`                               | ADR-030                                                   |
 | Stale data after logout       | Logout clears LocalStorage entries and every Cache Storage cache                                                                                                                 | `app-context.ts`                                          |
 | CSRF from the UI              | Every state-changing call sends `X-Panel-CSRF: 1`, same-origin credentials only                                                                                                  | "sends the CSRF header on state changes only"             |
+
+## Pages (Phase 7)
+
+| Threat                                | Control                                                                                                       | Verified by                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Hostile titles, summaries, references | Rendered as text through `h()`; external links only http(s), `target=_blank` with `rel="noopener noreferrer"` | `ui.ts`, e2e: zero CSP / Trusted Types events |
+| SSE payload injection                 | Payload fields coerced to strings and rendered as text; unknown event types ignored                           | `journal.ts`                                  |
+| Custom source added without checks    | "Add" stays disabled until a passing validation; the API re-validates on create (ADR-028)                     | e2e: private address refused, Add disabled    |
+| Database exfiltration via backup      | `/api/backup` requires a session, is rate limited, `no-store`, never cached by the Service Worker             | `routes.test.ts` (401 without session)        |
+| Validation library shipped to clients | Build fails if Zod appears in a browser bundle                                                                | `check-bundle.mjs`                            |

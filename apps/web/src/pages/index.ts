@@ -15,20 +15,15 @@ export const PAGE_TITLES: Readonly<Record<RouteName, MessageKey>> = {
   notFound: 'page.notFound',
 };
 
-/** Views are filled in Phase 7; until then each route renders its title and a placeholder. */
-function placeholder(route: Route): HTMLElement {
-  const serif = route.name === 'journal';
-  return h(
-    'section',
-    { attrs: { 'aria-labelledby': 'page-title' } },
-    h('h1', {
-      class: serif ? 'page-title serif' : 'page-title',
-      attrs: { id: 'page-title', tabindex: -1 },
-      text: t(PAGE_TITLES[route.name]),
-    }),
-    h('div', { class: 'box' }, emptyState(t('state.comingSoon'))),
-  );
-}
+/** Each view is a Custom Element: it loads its data on connect and cleans up on disconnect. */
+const ELEMENTS: Partial<Record<RouteName, string>> = {
+  journal: 'pn-journal-page',
+  brief: 'pn-brief-page',
+  threats: 'pn-threats-page',
+  breaches: 'pn-breaches-page',
+  releases: 'pn-releases-page',
+  settings: 'pn-settings-page',
+};
 
 function notFound(): HTMLElement {
   return h(
@@ -52,5 +47,6 @@ function notFound(): HTMLElement {
 }
 
 export function renderPage(route: Route): HTMLElement {
-  return route.name === 'notFound' ? notFound() : placeholder(route);
+  const element = ELEMENTS[route.name];
+  return element === undefined ? notFound() : h(element);
 }

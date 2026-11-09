@@ -217,13 +217,31 @@ function buildSixty(db: PanelDb, now: Date, ranked: ItemDto[]): SixtyEntry[] {
   return entries.slice(0, 5);
 }
 
-/** Articles of the last 3 days, ranked (best first). */
+/**
+ * Articles of the last 3 days, ranked (best first), keeping only the best article of each
+ * cluster: the same story from two outlets is shown once, with its "N sources" badge.
+ */
 function rankedArticles(db: PanelDb, now: Date): ItemDto[] {
-  return loadItems(db, {
-    where: gte(items.publishedAt, new Date(now.getTime() - 3 * DAY)),
-    limit: 1000,
-    now,
-  }).sort((a, b) => b.rank - a.rank);
+  const since = new Date(now.getTime() - 3 * DAY);
+  const ranked = loadItems(db, { where: gte(items.publishedAt, since), limit: 1000, now }).sort(
+    (a, b) => b.rank - a.rank,
+  );
+  const clusterOf = new Map(
+    db
+      .select({ id: items.id, clusterId: items.clusterId })
+      .from(items)
+      .where(and(eq(items.kind, 'article'), gte(items.publishedAt, since)))
+      .all()
+      .map((row) => [row.id, row.clusterId]),
+  );
+  const seen = new Set<string>();
+  return ranked.filter((item) => {
+    const cluster = clusterOf.get(item.id);
+    if (cluster === null || cluster === undefined) return true;
+    if (seen.has(cluster)) return false;
+    seen.add(cluster);
+    return true;
+  });
 }
 
 function withDates(list: ItemDto[]) {

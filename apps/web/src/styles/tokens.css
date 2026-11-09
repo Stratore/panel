@@ -6,7 +6,7 @@
   --bg: #f5f5f7;
   --card: #ffffff;
   --text: #1d1d1f;
-  --sub: #6e6e73;
+  --sub: #636366;
   --border: rgba(0, 0, 0, 0.06);
   --border-strong: rgba(0, 0, 0, 0.2);
   --seg: rgba(0, 0, 0, 0.05);
@@ -54,6 +54,13 @@
   --cat-hardware: #e38a13;
   --cat-hardware-fg: #9a4d00;
   --cat-hardware-bg: #fdf3e6;
+  /* Section text on the inverted surfaces (ticker, "In 60 seconds"). */
+  --cat-ai-inv: #b9a9ff;
+  --cat-cyber-inv: #ff9592;
+  --cat-innovation-inv: #5dd9c8;
+  --cat-dev-inv: #a9bbff;
+  --cat-hardware-inv: #ffc07a;
+  --inv-line: rgba(255, 255, 255, 0.14);
 
   /* Type */
   --font-ui: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -115,6 +122,12 @@
     --cat-dev-bg: rgba(46, 91, 255, 0.18);
     --cat-hardware-fg: #ffc07a;
     --cat-hardware-bg: rgba(227, 138, 19, 0.16);
+    --cat-ai-inv: #5b45b8;
+    --cat-cyber-inv: #b42318;
+    --cat-innovation-inv: #0b7065;
+    --cat-dev-inv: #2440c4;
+    --cat-hardware-inv: #9a4d00;
+    --inv-line: rgba(0, 0, 0, 0.12);
   }
 }
 
@@ -156,4 +169,10 @@
   --cat-dev-bg: rgba(46, 91, 255, 0.18);
   --cat-hardware-fg: #ffc07a;
   --cat-hardware-bg: rgba(227, 138, 19, 0.16);
+  --cat-ai-inv: #5b45b8;
+  --cat-cyber-inv: #b42318;
+  --cat-innovation-inv: #0b7065;
+  --cat-dev-inv: #2440c4;
+  --cat-hardware-inv: #9a4d00;
+  --inv-line: rgba(0, 0, 0, 0.12);
 }

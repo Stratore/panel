@@ -233,3 +233,38 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
   - Dark theme: `html[data-theme]` forces a theme, otherwise `prefers-color-scheme` applies; a test keeps both dark blocks identical and checks every text/background token pair at 4.5:1 in both themes.
   - Touch targets grow to 44 px on coarse pointers and phones; the desktop keeps the mockup's 40 px controls.
   - Preferences are cached in LocalStorage (versioned, size-capped) to avoid a theme or language flash; logout clears it and the Service Worker caches.
+
+## ADR-032 — Fictional demo seed and an end-to-end server
+
+- **Date:** 2026-11-09
+- **Decision:** `seedDemoData()` (`packages/db/src/demo.ts`) writes the fictional data of SPEC § 15 (5 CVEs, 22 articles including one two-outlet cluster, the "Northwind Retail" breach, 4 releases, 3 `example/*` repositories, one `fetch_runs` row per source). It is idempotent and never used by the production entry points. `e2e/serve-demo.mjs` starts the real API (from `dist`) on a throw-away database with this seed and a fake `safeFetch` that only answers HTTPS URLs containing `feed`, so "Test feed" is deterministic and private addresses are still refused.
+
+## ADR-033 — Downloadable backup route
+
+- **Date:** 2026-11-09
+- **Decision:** `GET /api/backup` (session required, 2 requests/minute) runs the same online `VACUUM INTO` backup as the scheduler into a private temporary directory, streams it as `application/vnd.sqlite3` with `Content-Disposition: attachment` and `Cache-Control: no-store`, then deletes the directory. The Service Worker never caches it.
+
+## ADR-034 — Front-end bundle guard
+
+- **Date:** 2026-11-09
+- **Decision:** `apps/web/scripts/check-bundle.mjs` runs after `vite build` and fails the build when a JS asset is over 60 KB gzipped (SPEC § 10) or contains Zod. Browser-side constants (`PASSPHRASE_MIN`, `CVE_FILTERS`, `CVE_SORTS`) live in the Zod-free `constants.ts`; importing them from `api.ts` once pulled Zod in (59 KB). Current initial JS: 31 KB gzipped.
+
+## ADR-035 — Pages, drawer and palette
+
+- **Date:** 2026-11-09
+- **Decision:**
+  - Lists keep their filters in the URL with `history.replaceState` (no re-render, shareable links); `/threats/:id` opens the drawer and closing it restores the list URL.
+  - The CVE drawer is a modal dialog: focus moves to Close, the shell is `inert`, focus returns to the opener; `Esc`, `j`/`k`, `s` (save, LocalStorage), `o` (open NVD); swipe down closes it on phones, where it is full screen.
+  - The TL;DR shows `< first fixed version` when known, else the single affected range, else the product alone.
+  - The ⌘K palette is a combobox with `aria-activedescendant`, a 180 ms debounced search and `>` commands (theme, sync, pause).
+  - Every animation (ticker, front-page rotation, live wire, section rotation, count-ups) goes through `lib/motion.ts`, which skips while paused, under reduced motion or when the tab is hidden.
+  - The Journal and Brief keep only the best-ranked article of each cluster, so a story covered by two outlets appears once with its "N sources" badge.
+  - The live wire is a labelled scroll region, not `role="feed"` (its rows sit in loop wrappers, which `feed` does not allow).
+  - Clock times are 24-hour in both languages (they are timestamps in a narrow column).
+  - Light `--sub` goes from `#6e6e73` (mockup) to `#636366`: the mockup value gives 4.18:1 on segmented controls (`--seg` over `--bg`). The token test now covers that pair.
+
+## ADR-036 — Playwright and axe-core for end-to-end tests
+
+- **Date:** 2026-11-09
+- **Context:** SPEC § 12 asks for an end-to-end journey and an accessibility audit with no serious or critical violation.
+- **Decision:** `@playwright/test` (Microsoft, no runtime dependencies besides its own `playwright-core`) and `@axe-core/playwright` (Deque, depends only on `axe-core`), both dev-only. One serial spec runs setup → login → Journal filter → CVE drawer from the keyboard → custom source validation → FR/dark switches → axe on every page, and asserts zero `securitypolicyviolation` events from the first script of each document. Locally it uses the installed Edge (`channel: msedge`); CI installs the Chromium headless shell and uploads traces on failure. The session is created once and reused because logging in is rate limited.

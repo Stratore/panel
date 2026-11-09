@@ -13,7 +13,9 @@
     "packages/*/src/**/*.test.ts",
     "vitest.config.ts",
     "packages/*/drizzle.config.ts",
-    "apps/api/src/testing.ts"
+    "apps/api/src/testing.ts",
+    "e2e/**/*.ts",
+    "playwright.config.ts"
   ],
   "exclude": ["apps/web/**"]
 }

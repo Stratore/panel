@@ -209,6 +209,39 @@ describe('journal and brief', () => {
     expect(brief.releases[0]?.version).toBe('8.3.14');
   });
 
+  it('shows a story covered by two outlets only once', async () => {
+    const db = ctx.handle.db;
+    db.insert(schema.items)
+      .values({
+        id: 8,
+        sourceId: 'thehackernews',
+        kind: 'article',
+        url: 'https://news.example.com/8',
+        urlHash: 'hash-8',
+        title: 'PHP flaw exploited in the wild, patch now',
+        summary: 'Same story, second outlet',
+        lang: 'en',
+        publishedAt: hoursAgo(1),
+        fetchedAt: hoursAgo(1),
+        category: 'cyber',
+        clusterId: 'c-1',
+      })
+      .run();
+    try {
+      const journal = journalDtoSchema.parse((await get('/api/journal')).json());
+      const shown = [...journal.front, ...Object.values(journal.sections).flat()].map((i) => i.id);
+      expect(shown.filter((id) => id === 1 || id === 8)).toHaveLength(1);
+      const story = journal.front
+        .concat(journal.sections.cyber)
+        .find((i) => i.id === 1 || i.id === 8);
+      expect(story?.clusterSize).toBe(2);
+      const brief = briefDtoSchema.parse((await get('/api/brief')).json());
+      expect(brief.topStories.filter((i) => i.id === 1 || i.id === 8)).toHaveLength(1);
+    } finally {
+      db.delete(schema.items).where(eq(schema.items.id, 8)).run();
+    }
+  });
+
   it('tracks the last visit', async () => {
     expect((await request(ctx.app, 'POST', '/api/visit', { cookie })).statusCode).toBe(204);
     const brief = briefDtoSchema.parse((await get('/api/brief')).json());
@@ -534,5 +567,17 @@ describe('stream helpers', () => {
     expect(eventsAfter(db, 0).map((e) => e.type)).toEqual(['item.new', 'cve.updated']);
     expect(eventsAfter(db, 1).map((e) => e.id)).toEqual([2]);
     expect(latestEventId(db)).toBe(2);
+  });
+});
+
+describe('backup', () => {
+  it('streams a consistent SQLite copy to the signed-in user', async () => {
+    const response = await get('/api/backup');
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-disposition']).toMatch(
+      /^attachment; filename="panel-\d{8}T\d{6}Z\.db"$/,
+    );
+    expect(response.rawPayload.subarray(0, 15).toString()).toBe('SQLite format 3');
+    expect((await request(ctx.app, 'GET', '/api/backup')).statusCode).toBe(401);
   });
 });

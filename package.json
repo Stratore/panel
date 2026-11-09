@@ -18,12 +18,15 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "build": "pnpm -r --if-present build"
+    "build": "pnpm -r --if-present build",
+    "e2e": "playwright test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@commitlint/cli": "21.2.4",
     "@commitlint/config-conventional": "21.2.4",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
     "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "5.0.5",
     "eslint": "^10.14.0",

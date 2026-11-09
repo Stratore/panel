@@ -1,5 +1,6 @@
 import type { SessionDto } from '@panel/shared';
 import { boot, router } from '../app-context.js';
+import { registerStaleIndicator } from '../lib/data.js';
 import { h, mount } from '../lib/h.js';
 import { lang, t } from '../lib/i18n.js';
 import type { Route } from '../lib/router.js';
@@ -29,6 +30,7 @@ export function guard(current: SessionDto, route: Route): string | null {
  */
 export class PnAppShell extends HTMLElement {
   private main: HTMLElement | null = null;
+  private readonly banner = h('pn-offline-banner');
   private stopRouter: (() => void) | null = null;
   private unsubscribers: (() => void)[] = [];
 
@@ -42,6 +44,7 @@ export class PnAppShell extends HTMLElement {
         applyTheme(p.theme);
         lang.set(p.lang);
         applyMotion({ paused: paused.get(), reduce: p.reduceMotion || reduce });
+        document.documentElement.classList.toggle('density-compact', p.density === 'compact');
       }),
       paused.subscribe((value) => {
         applyMotion({ paused: value, reduce: prefs.get().reduceMotion || reduce });
@@ -80,6 +83,10 @@ export class PnAppShell extends HTMLElement {
         skeleton({ lines: 4 }),
       ),
     );
+    registerStaleIndicator((age) => {
+      if (age === null) this.banner.removeAttribute('stale-age');
+      else this.banner.setAttribute('stale-age', age);
+    });
     void boot();
   }
 
@@ -114,19 +121,25 @@ export class PnAppShell extends HTMLElement {
         isDemo
           ? h('div', { class: 'demo-banner', attrs: { role: 'note' }, text: t('app.demo') })
           : null,
+        // Full-width band above the header (the Journal's LIVE ticker).
+        h('div', { attrs: { id: 'top-band' } }),
         h(
           'div',
           { class: 'container' },
           h('pn-header'),
           h('div', { style: { height: '8px' } }),
-          h('pn-offline-banner'),
+          this.banner,
           this.main,
         ),
         h('pn-tabbar'),
       );
     }
+    document.getElementById('top-band')?.replaceChildren();
+    this.banner.removeAttribute('stale-age');
     mount(this.main, renderPage(route));
-    // Move focus to the new page title for keyboard and screen-reader users.
-    this.main.querySelector<HTMLElement>('#page-title')?.focus({ preventScroll: true });
+    // Move focus to the new page (its title when present) for keyboard and screen-reader users.
+    (this.main.querySelector<HTMLElement>('#page-title') ?? this.main).focus({
+      preventScroll: true,
+    });
   }
 }

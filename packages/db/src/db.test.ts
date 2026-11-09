@@ -6,6 +6,7 @@ import { eq, sql } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { backupDatabase } from './backup.js';
 import { migrateDatabase, openDatabase, type DatabaseHandle } from './client.js';
+import { seedDemoData } from './demo.js';
 import { compactDatabase, purgeExpired } from './retention.js';
 import * as schema from './schema.js';
 import { loadSourcesCatalog, PREFS_KEY, seedDatabase } from './seed.js';
@@ -323,5 +324,25 @@ describe('compactDatabase', () => {
     insertItem();
     compactDatabase(handle.db);
     expect(handle.db.select().from(schema.items).all()).toHaveLength(1);
+  });
+});
+
+describe('seedDemoData', () => {
+  it('loads the fictional sample set once, idempotently', () => {
+    seedDatabase(handle.db, loadSourcesCatalog(CATALOG_PATH), now);
+    seedDemoData(handle.db, now);
+    seedDemoData(handle.db, now);
+    expect(
+      handle.db
+        .select()
+        .from(schema.cves)
+        .all()
+        .map((c) => c.cveId),
+    ).toContain('CVE-2026-41234');
+    expect(handle.db.select().from(schema.items).all()).toHaveLength(22);
+    expect(handle.db.select().from(schema.breaches).get()?.accounts).toBe(12_400_000);
+    expect(
+      handle.db.select().from(schema.sources).where(eq(schema.sources.id, 'next')).get()?.health,
+    ).toBe('slow');
   });
 });

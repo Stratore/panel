@@ -1,8 +1,11 @@
 import { randomBytes } from 'node:crypto';
+import { createReadStream, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { basename, join } from 'node:path';
 import { count, eq, inArray, max, sql } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { schema, type PanelDb } from '@panel/db';
+import { backupDatabase, schema, type DatabaseHandle, type PanelDb } from '@panel/db';
 import type { SafeFetch } from '@panel/safe-fetch';
 import {
   alertTestDtoSchema,
@@ -43,6 +46,7 @@ export interface AdminDeps {
   alerts: AlertSender;
   version: string;
   startedAt: Date;
+  sqlite?: DatabaseHandle['sqlite'] | undefined;
 }
 
 const sourceIdParams = z.strictObject({ id: z.string().regex(/^[a-z0-9-]{2,40}$/) });
@@ -339,6 +343,31 @@ export function registerAdminRoutes(app: FastifyInstance, deps: AdminDeps): void
         throw new HttpProblem(409, 'Conflict', 'No alert channel is configured.');
       }
       return sendJson(reply, alertTestDtoSchema, await deps.alerts.sendTest());
+    },
+  );
+
+  // --- Backup ----------------------------------------------------------------------------
+
+  /** Settings › Data: a consistent online copy of the database, streamed then deleted. */
+  app.get(
+    '/api/backup',
+    { config: { rateLimit: { max: 2, timeWindow: '1 minute' } } },
+    async (_request, reply) => {
+      const sqlite = deps.sqlite;
+      if (sqlite === undefined)
+        throw new HttpProblem(503, 'Service Unavailable', 'Backups are not available.');
+      const dir = mkdtempSync(join(tmpdir(), 'panel-backup-'));
+      const file = await backupDatabase(sqlite, dir, { now: deps.now(), keep: 1 });
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- file created just above in our own temp dir
+      const stream = createReadStream(file);
+      stream.on('close', () => {
+        rmSync(dir, { recursive: true, force: true });
+      });
+      void reply
+        .header('content-type', 'application/vnd.sqlite3')
+        .header('content-disposition', `attachment; filename="${basename(file)}"`)
+        .header('cache-control', 'no-store');
+      return reply.send(stream);
     },
   );
 

@@ -75,7 +75,7 @@ export default tseslint.config(
 
   // Node-side code.
   {
-    files: ['apps/api/**', 'apps/collector/**', 'packages/**', '*.js', '*.ts'],
+    files: ['apps/api/**', 'apps/collector/**', 'packages/**', 'e2e/**', '*.js', '*.ts'],
     languageOptions: { globals: globals.node },
   },
 
@@ -139,7 +139,7 @@ export default tseslint.config(
 
   // Plain JS config files are not type-checked.
   {
-    files: ['**/*.js'],
+    files: ['**/*.js', '**/*.mjs'],
     ...tseslint.configs.disableTypeChecked,
   },
 
