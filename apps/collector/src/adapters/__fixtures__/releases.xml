@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example releases</title>
+  <entry>
+    <title>PHP 8.3.14 Released!</title>
+    <link href="https://www.php.example/releases/8_3_14.php"/>
+    <id>php-8.3.14</id>
+    <updated>2026-11-01T12:00:00Z</updated>
+    <summary>This is a security release fixing CVE-2026-41234.</summary>
+  </entry>
+  <entry>
+    <title>PHP 8.4.1 Released!</title>
+    <link href="https://www.php.example/releases/8_4_1.php"/>
+    <id>php-8.4.1</id>
+    <updated>2026-10-20T12:00:00Z</updated>
+    <summary>Bug fix release.</summary>
+  </entry>
+  <entry>
+    <title>Community news without a version</title>
+    <link href="https://www.php.example/news"/>
+    <id>news</id>
+    <updated>2026-10-19T12:00:00Z</updated>
+  </entry>
+</feed>

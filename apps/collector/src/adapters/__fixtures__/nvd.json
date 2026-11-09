@@ -1,0 +1,114 @@
+{
+  "resultsPerPage": 3,
+  "startIndex": 0,
+  "totalResults": 3,
+  "format": "NVD_CVE",
+  "version": "2.0",
+  "vulnerabilities": [
+    {
+      "cve": {
+        "id": "CVE-2026-41234",
+        "published": "2026-10-30T10:00:00.000",
+        "lastModified": "2026-11-01T10:00:00.000",
+        "vulnStatus": "Analyzed",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Out-of-bounds write in <b>PHP</b> before 8.3.14 allows remote code execution."
+          },
+          { "lang": "es", "value": "Escritura fuera de limites." }
+        ],
+        "metrics": {
+          "cvssMetricV40": [
+            {
+              "type": "Secondary",
+              "cvssData": {
+                "version": "4.0",
+                "baseScore": 9.3,
+                "vectorString": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+                "baseSeverity": "CRITICAL"
+              }
+            }
+          ],
+          "cvssMetricV31": [
+            {
+              "type": "Secondary",
+              "cvssData": {
+                "version": "3.1",
+                "baseScore": 9.1,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+                "baseSeverity": "CRITICAL"
+              }
+            },
+            {
+              "type": "Primary",
+              "cvssData": {
+                "version": "3.1",
+                "baseScore": 9.8,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "baseSeverity": "CRITICAL"
+              }
+            }
+          ]
+        },
+        "weaknesses": [
+          { "type": "Secondary", "description": [{ "lang": "en", "value": "NVD-CWE-Other" }] },
+          { "type": "Primary", "description": [{ "lang": "en", "value": "CWE-787" }] }
+        ],
+        "configurations": [
+          {
+            "nodes": [
+              {
+                "operator": "OR",
+                "cpeMatch": [
+                  {
+                    "vulnerable": true,
+                    "criteria": "cpe:2.3:a:php:php:*:*:*:*:*:*:*:*",
+                    "versionStartIncluding": "8.2.0",
+                    "versionEndExcluding": "8.2.27"
+                  },
+                  {
+                    "vulnerable": true,
+                    "criteria": "cpe:2.3:a:php:php:*:*:*:*:*:*:*:*",
+                    "versionStartIncluding": "8.3.0",
+                    "versionEndExcluding": "8.3.14"
+                  },
+                  {
+                    "vulnerable": false,
+                    "criteria": "cpe:2.3:o:debian:debian_linux:12.0:*:*:*:*:*:*:*"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "references": [
+          { "url": "https://www.php.example/ChangeLog-8.php", "tags": ["Release Notes"] },
+          {
+            "url": "https://exploits.example/php-41234",
+            "tags": ["Exploit", "Third Party Advisory"]
+          },
+          { "url": "ftp://bad.example/file" }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2026-40001",
+        "published": "2026-10-31T10:00:00.000",
+        "lastModified": "2026-10-31T10:00:00.000",
+        "vulnStatus": "Rejected",
+        "descriptions": [{ "lang": "en", "value": "** REJECT ** Duplicate." }]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2026-40999",
+        "published": "2026-11-01T08:00:00.000",
+        "lastModified": "2026-11-01T08:00:00.000",
+        "vulnStatus": "Awaiting Analysis",
+        "descriptions": [{ "lang": "en", "value": "Authentication bypass in OpenSSH." }]
+      }
+    }
+  ]
+}

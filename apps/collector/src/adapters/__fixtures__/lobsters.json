@@ -1,0 +1,20 @@
+[
+  {
+    "short_id": "abc123",
+    "title": "A neutral Lobsters story",
+    "url": "https://blog.example.com/story",
+    "comments_url": "https://lobste.rs/s/abc123",
+    "created_at": "2026-11-02T12:00:00.000-05:00",
+    "description_plain": "",
+    "submitter_user": "alice",
+    "score": 42
+  },
+  {
+    "short_id": "def456",
+    "title": "Ask: text-only post",
+    "url": "",
+    "comments_url": "https://lobste.rs/s/def456",
+    "created_at": "2026-11-02T11:00:00.000-05:00",
+    "submitter_user": { "username": "bob" }
+  }
+]

@@ -1,6 +1,6 @@
 import { and, eq, lt, sql } from 'drizzle-orm';
 import type { PanelDb } from './client.js';
-import { alertsSent, cves, fetchRuns, items, repoStars, sessions } from './schema.js';
+import { alertsSent, cves, events, fetchRuns, items, repoStars, sessions } from './schema.js';
 
 /** Retention windows in days (SPEC § 7.4). KEV CVEs are kept forever. */
 export const RETENTION_DAYS = {
@@ -9,6 +9,7 @@ export const RETENTION_DAYS = {
   fetchRuns: 7,
   alertsSent: 90,
   repoStars: 30,
+  events: 1,
 } as const;
 
 export interface PurgeResult {
@@ -18,6 +19,7 @@ export interface PurgeResult {
   alertsSent: number;
   repoStars: number;
   sessions: number;
+  events: number;
 }
 
 const daysBefore = (now: Date, days: number) => new Date(now.getTime() - days * 86_400_000);
@@ -55,6 +57,10 @@ export function purgeExpired(db: PanelDb, now = new Date()): PurgeResult {
         .where(lt(repoStars.day, utcDay(daysBefore(now, RETENTION_DAYS.repoStars))))
         .run().changes,
       sessions: tx.delete(sessions).where(lt(sessions.expiresAt, now)).run().changes,
+      events: tx
+        .delete(events)
+        .where(lt(events.createdAt, daysBefore(now, RETENTION_DAYS.events)))
+        .run().changes,
     };
   });
 }

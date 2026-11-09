@@ -1,0 +1,35 @@
+[
+  {
+    "ghsa_id": "GHSA-2c8m-mx4q-vw9r",
+    "cve_id": "CVE-2026-41234",
+    "html_url": "https://github.com/advisories/GHSA-2c8m-mx4q-vw9r",
+    "summary": "Sample advisory",
+    "severity": "critical",
+    "vulnerabilities": [
+      {
+        "package": { "ecosystem": "composer", "name": "php/php-src" },
+        "vulnerable_version_range": "< 8.3.14",
+        "first_patched_version": "8.3.14"
+      },
+      {
+        "package": { "ecosystem": "composer", "name": "php/php-src" },
+        "vulnerable_version_range": "< 8.2.27",
+        "first_patched_version": "8.2.27"
+      }
+    ]
+  },
+  {
+    "ghsa_id": "GHSA-3f4g-5h6j-7m8p",
+    "cve_id": null,
+    "html_url": "https://github.com/advisories/GHSA-3f4g-5h6j-7m8p",
+    "severity": "high",
+    "vulnerabilities": []
+  },
+  {
+    "ghsa_id": "GHSA-9x9x-9x9x-9x9x",
+    "cve_id": "CVE-2026-40531",
+    "html_url": "https://github.com/advisories/GHSA-9x9x-9x9x-9x9x",
+    "severity": "unknown",
+    "vulnerabilities": null
+  }
+]

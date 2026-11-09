@@ -105,10 +105,12 @@ export const cves = sqliteTable(
     vector: text('vector'),
     severity: text('severity').$type<Severity>(),
     ghsaSeverity: text('ghsa_severity'),
+    ghsaId: text('ghsa_id'),
     epss: real('epss'),
     epssPercentile: real('epss_percentile'),
     epssDate: text('epss_date'),
     kev: bool('kev').notNull().default(false),
+    kevName: text('kev_name'),
     kevAdded: text('kev_added'),
     kevDue: text('kev_due'),
     kevRansomware: bool('kev_ransomware').notNull().default(false),
@@ -251,4 +253,19 @@ export const sessions = sqliteTable(
     uaHash: text('ua_hash'),
   },
   (t) => [index('sessions_expires_idx').on(t.expiresAt)],
+);
+
+/**
+ * Change feed written by the collector and tailed by the API to push SSE events
+ * (SPEC § 8 /stream). Rows are short-lived: purged after a day.
+ */
+export const events = sqliteTable(
+  'events',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    type: text('type').$type<'item.new' | 'cve.updated' | 'source.health'>().notNull(),
+    payloadJson: text('payload_json', { mode: 'json' }).$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp('created_at').notNull(),
+  },
+  (t) => [index('events_created_idx').on(t.createdAt)],
 );

@@ -1,0 +1,22 @@
+{
+  "total_count": 2,
+  "incomplete_results": false,
+  "items": [
+    {
+      "full_name": "example/panel-demo",
+      "description": "Sample repository.",
+      "language": "TypeScript",
+      "html_url": "https://github.com/example/panel-demo",
+      "stargazers_count": 1200,
+      "created_at": "2026-10-28T08:00:00Z"
+    },
+    {
+      "full_name": "example/tiny-llm",
+      "description": null,
+      "language": null,
+      "html_url": "https://github.com/example/tiny-llm",
+      "stargazers_count": 800,
+      "created_at": "2026-10-30T08:00:00Z"
+    }
+  ]
+}

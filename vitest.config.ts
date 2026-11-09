@@ -22,6 +22,12 @@ export default defineConfig({
       thresholds: {
         'packages/shared/src/**': { lines: 80, functions: 80, branches: 80, statements: 80 },
         'packages/safe-fetch/src/**': { lines: 80, functions: 80, branches: 80, statements: 80 },
+        'apps/collector/src/pipeline/**': {
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
+        },
       },
     },
   },

@@ -1,0 +1,31 @@
+[
+  {
+    "Name": "NorthwindRetail",
+    "Title": "Northwind Retail",
+    "Domain": "northwind.example",
+    "BreachDate": "2026-10-01",
+    "AddedDate": "2026-11-01T08:00:00Z",
+    "ModifiedDate": "2026-11-01T08:00:00Z",
+    "PwnCount": 12400000,
+    "Description": "<a href=\"https://northwind.example\">Sample</a>",
+    "DataClasses": ["Email addresses", "Passwords"],
+    "IsVerified": true,
+    "IsFabricated": false,
+    "IsSensitive": false,
+    "IsRetired": false,
+    "IsSpamList": false
+  },
+  {
+    "Name": "SpamListExample",
+    "Title": "Spam list",
+    "Domain": "",
+    "BreachDate": "2026-09-01",
+    "AddedDate": "2026-10-01T08:00:00Z",
+    "PwnCount": 1000,
+    "DataClasses": ["Email addresses"],
+    "IsVerified": false,
+    "IsSensitive": false,
+    "IsSpamList": true
+  },
+  { "Name": "Broken", "Title": "Broken", "PwnCount": "lots" }
+]

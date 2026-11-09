@@ -1,0 +1,38 @@
+{
+  "title": "CISA Catalog of Known Exploited Vulnerabilities",
+  "catalogVersion": "2026.11.02",
+  "count": 3,
+  "vulnerabilities": [
+    {
+      "cveID": "CVE-2026-41234",
+      "vendorProject": "PHP",
+      "product": "PHP",
+      "vulnerabilityName": "PHP Remote Code Execution Vulnerability",
+      "dateAdded": "2026-11-02",
+      "shortDescription": "Sample description.",
+      "requiredAction": "Apply mitigations per vendor instructions.",
+      "dueDate": "2026-11-23",
+      "knownRansomwareCampaignUse": "Unknown",
+      "notes": "",
+      "cwes": ["CWE-787"]
+    },
+    {
+      "cveID": "CVE-2026-40712",
+      "vendorProject": "Linux",
+      "product": "Kernel",
+      "vulnerabilityName": "Linux Kernel Privilege Escalation <script>x</script>",
+      "dateAdded": "2026-10-28",
+      "dueDate": "2026-11-18",
+      "knownRansomwareCampaignUse": "Known",
+      "cwes": []
+    },
+    {
+      "cveID": "not-a-cve",
+      "vendorProject": "X",
+      "product": "Y",
+      "vulnerabilityName": "Bad id",
+      "dateAdded": "2026-10-01"
+    },
+    { "unexpected": true }
+  ]
+}

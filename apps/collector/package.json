@@ -6,9 +6,17 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "start": "node dist/main.js",
+    "collect:once": "node dist/main.js --once"
   },
   "dependencies": {
-    "@panel/shared": "workspace:*"
+    "@panel/db": "workspace:*",
+    "@panel/safe-fetch": "workspace:*",
+    "@panel/shared": "workspace:*",
+    "croner": "11.0.0",
+    "drizzle-orm": "0.45.4",
+    "pino": "10.4.0",
+    "zod": "4.6.7"
   }
 }

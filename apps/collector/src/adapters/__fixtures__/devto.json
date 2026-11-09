@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1001,
+    "title": "Building a tiny RSS reader",
+    "description": "A neutral sample description.",
+    "url": "https://dev.example.to/sam/tiny-rss-reader",
+    "published_at": "2026-11-02T09:00:00Z",
+    "user": { "name": "Sam" },
+    "positive_reactions_count": 120
+  },
+  {
+    "id": 1002,
+    "title": "No description",
+    "description": null,
+    "url": "https://dev.example.to/kim/post",
+    "published_at": "2026-11-01T09:00:00Z"
+  }
+]

@@ -6,6 +6,8 @@ export const httpUrlSchema = z
   .url({ protocol: /^https?$/, hostname: z.regexes.domain })
   .max(LIMITS.urlLength)
   .refine((value) => {
+    // Refinements run even when the URL check above failed: never let parsing throw.
+    if (!URL.canParse(value)) return false;
     const url = new URL(value);
     return url.username === '' && url.password === '';
   }, 'URL must not contain credentials');
@@ -51,6 +53,47 @@ export const cveItemSchema = z.strictObject({
   references: z.array(httpUrlSchema).max(100),
   published: isoDateTimeSchema,
   modified: isoDateTimeSchema,
+  /** Main affected product, e.g. "PHP" (derived from CPE vendor/product). */
+  product: z.string().trim().max(80).nullable(),
+  /** Short affected ranges, e.g. ["< 8.3.14", "8.2.0 – 8.2.26"]. */
+  affected: z.array(z.string().max(80)).max(20),
+  fixedVersions: z.string().max(200).nullable(),
+  hasPublicExploit: z.boolean(),
+});
+
+/** Partial CVE updates from sources that only know part of the record (merged by cve id). */
+export const kevPatchSchema = z.strictObject({
+  kind: z.literal('cve-kev'),
+  cveId: cveIdSchema,
+  product: z.string().trim().max(80),
+  name: z.string().trim().max(LIMITS.titleLength),
+  dateAdded: z.iso.date(),
+  dueDate: z.iso.date().nullable(),
+  ransomware: z.boolean(),
+  cwe: z
+    .string()
+    .regex(/^CWE-\d{1,5}$/)
+    .nullable(),
+});
+
+export const epssPatchSchema = z.strictObject({
+  kind: z.literal('cve-epss'),
+  cveId: cveIdSchema,
+  epss: z.number().min(0).max(1),
+  percentile: z.number().min(0).max(1),
+  date: z.iso.date(),
+});
+
+export const ghsaPatchSchema = z.strictObject({
+  kind: z.literal('cve-ghsa'),
+  cveId: cveIdSchema,
+  ghsaId: z
+    .string()
+    .regex(/^GHSA-[23456789cfghjmpqrvwx]{4}-[23456789cfghjmpqrvwx]{4}-[23456789cfghjmpqrvwx]{4}$/),
+  severity: z.enum(['critical', 'high', 'medium', 'low']).nullable(),
+  product: z.string().trim().max(80).nullable(),
+  fixedVersions: z.string().max(200).nullable(),
+  url: httpUrlSchema,
 });
 
 export const breachItemSchema = z.strictObject({
@@ -92,6 +135,9 @@ export const normalizedItemSchema = z.discriminatedUnion('kind', [
   breachItemSchema,
   releaseItemSchema,
   repoItemSchema,
+  kevPatchSchema,
+  epssPatchSchema,
+  ghsaPatchSchema,
 ]);
 
 export type ArticleItem = z.infer<typeof articleItemSchema>;
@@ -99,6 +145,9 @@ export type CveItem = z.infer<typeof cveItemSchema>;
 export type BreachItem = z.infer<typeof breachItemSchema>;
 export type ReleaseItem = z.infer<typeof releaseItemSchema>;
 export type RepoItem = z.infer<typeof repoItemSchema>;
+export type KevPatch = z.infer<typeof kevPatchSchema>;
+export type EpssPatch = z.infer<typeof epssPatchSchema>;
+export type GhsaPatch = z.infer<typeof ghsaPatchSchema>;
 export type NormalizedItem = z.infer<typeof normalizedItemSchema>;
 
 export const watchlistEntrySchema = z.strictObject({

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example Dev Blog</title>
+  <entry>
+    <title type="html">TypeScript 6.0 &amp;amp; the road ahead</title>
+    <link rel="replies" href="https://dev.example.org/comments/1"/>
+    <link rel="alternate" href="https://dev.example.org/posts/typescript-6"/>
+    <id>tag:dev.example.org,2026:1</id>
+    <updated>2026-11-02T10:00:00Z</updated>
+    <author><name>Sam Example</name></author>
+    <summary>Release notes summary.</summary>
+  </entry>
+  <entry>
+    <title>Single link entry</title>
+    <link href="https://dev.example.org/posts/single"/>
+    <id>tag:dev.example.org,2026:2</id>
+    <published>2026-11-01T10:00:00+01:00</published>
+  </entry>
+</feed>

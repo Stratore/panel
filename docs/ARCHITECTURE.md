@@ -53,3 +53,15 @@ Pure, dependency-light domain logic (Zod only), usable from Node and the browser
 | `xml.ts`    | `parseXmlSafe`                                                                                    |
 | `text.ts`   | `decodeXmlEntities`, `htmlToText`, `cleanText`, `toPlainText`                                     |
 | `errors.ts` | `SafeFetchError` with a typed `code` per refused check                                            |
+
+## `apps/collector`
+
+| Module                   | Content                                                                                                                                                                                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `adapters/`              | One adapter per source type (SPEC § 7.1): generic RSS/Atom/RDF (also custom sources and release feeds), CISA KEV, NVD, EPSS, GitHub Advisories, HIBP, Hacker News, Lobsters, DEV, GitHub trending. Synthetic and malicious fixtures in `__fixtures__/` |
+| `pipeline/`              | Canonical URL + SHA-256 dedupe, title clustering (48 h, Jaccard ≥ 0.8), keyword classification, CVE extraction and merge (NVD, KEV, EPSS, GHSA), priority, rank, `events` rows                                                                         |
+| `scheduler/queue.ts`     | 4 concurrent tasks, 1 per domain                                                                                                                                                                                                                       |
+| `scheduler/retry.ts`     | 3 attempts on 429/5xx/timeouts, 2 s doubling to 60 s with jitter, `Retry-After` honoured                                                                                                                                                               |
+| `scheduler/runner.ts`    | One source run: conditional fetch, Zod validation of every candidate, pipeline, `fetch_runs`, health and circuit breaker                                                                                                                               |
+| `scheduler/scheduler.ts` | croner jobs, jitter, maintenance                                                                                                                                                                                                                       |
+| `main.ts`                | Boot (migrate, seed), scheduler, `--once [sourceId]` for one-shot runs                                                                                                                                                                                 |

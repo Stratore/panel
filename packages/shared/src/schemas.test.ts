@@ -30,7 +30,9 @@ describe('httpUrlSchema', () => {
     'https://user:pw@example.com/',
     'https://localhost/',
     `https://example.com/${'a'.repeat(2048)}`,
-  ])('rejects %s', (url) => {
+    '/releases/8_3_14.php',
+    'not a url',
+  ])('rejects %s without throwing', (url) => {
     expect(httpUrlSchema.safeParse(url).success).toBe(false);
   });
 });
@@ -66,6 +68,10 @@ describe('normalizedItemSchema', () => {
       references: ['https://www.php.net/'],
       published: '2026-10-30T10:00:00Z',
       modified: '2026-11-01T10:00:00Z',
+      product: 'PHP',
+      affected: ['< 8.3.14'],
+      fixedVersions: '8.3.14',
+      hasPublicExploit: false,
     };
     expect(normalizedItemSchema.safeParse(cve).success).toBe(true);
     expect(normalizedItemSchema.safeParse({ ...cve, cveId: 'CVE-26-1' }).success).toBe(false);
@@ -166,5 +172,63 @@ describe('sourceDefinitionSchema', () => {
     expect(sourcesCatalogSchema.safeParse({ version: 1, sources: [base, base] }).success).toBe(
       false,
     );
+  });
+});
+
+describe('CVE patch records', () => {
+  it('accepts KEV, EPSS and GHSA patches', () => {
+    const patches = [
+      {
+        kind: 'cve-kev',
+        cveId: 'CVE-2026-41234',
+        product: 'PHP',
+        name: 'PHP Remote Code Execution',
+        dateAdded: '2026-11-02',
+        dueDate: '2026-11-23',
+        ransomware: false,
+        cwe: 'CWE-787',
+      },
+      {
+        kind: 'cve-epss',
+        cveId: 'CVE-2026-41234',
+        epss: 0.94,
+        percentile: 0.99,
+        date: '2026-11-02',
+      },
+      {
+        kind: 'cve-ghsa',
+        cveId: 'CVE-2026-41234',
+        ghsaId: 'GHSA-2c8m-mx4q-vw9r',
+        severity: 'critical',
+        product: 'php/php-src',
+        fixedVersions: '8.3.14',
+        url: 'https://github.com/advisories/GHSA-2c8m-mx4q-vw9r',
+      },
+    ];
+    for (const patch of patches)
+      expect(normalizedItemSchema.safeParse(patch).success, patch.kind).toBe(true);
+  });
+
+  it('rejects an out-of-range EPSS score and a malformed GHSA id', () => {
+    expect(
+      normalizedItemSchema.safeParse({
+        kind: 'cve-epss',
+        cveId: 'CVE-2026-1234',
+        epss: 2,
+        percentile: 0.5,
+        date: '2026-11-02',
+      }).success,
+    ).toBe(false);
+    expect(
+      normalizedItemSchema.safeParse({
+        kind: 'cve-ghsa',
+        cveId: 'CVE-2026-1234',
+        ghsaId: 'GHSA-xxxx',
+        severity: null,
+        product: null,
+        fixedVersions: null,
+        url: 'https://github.com/advisories/x',
+      }).success,
+    ).toBe(false);
   });
 });

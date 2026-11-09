@@ -109,11 +109,12 @@ export default tseslint.config(
     },
   },
 
-  // Tests load fixtures from computed paths.
+  // Tests load fixtures from computed paths and assert on detached mock methods.
   {
     files: ['**/*.test.ts'],
     rules: {
       'security/detect-non-literal-fs-filename': 'off',
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
 

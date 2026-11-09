@@ -149,3 +149,34 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 - **Date:** 2026-11-03
 - **Context:** While writing Phase 3, escape sequences for invisible characters were turned into the literal characters by the editing tooling, which is exactly how bidi/zero-width tricks hide in code.
 - **Decision:** A test (`packages/shared/src/source-hygiene.test.ts`) fails if any source, config or workflow file contains a literal control, zero-width, bidi-override or BOM character. Such characters must be written as `\u` escapes.
+
+## ADR-020 — NVD page size and resumable windows
+
+- **Date:** 2026-11-09
+- **Context:** A 2000-result NVD page is 10–20 MB, far above safeFetch's 5 MB cap; even 500 results exceeded it in the live run (some records list thousands of CPE matches). 200 results weigh ≈ 1.7 MB.
+- **Decision:** `resultsPerPage: 200`, at most 50 pages per run. When a window is too large for one run, the cursor stored in `sources.last_modified` becomes `resume:<start>|<end>|<startIndex>` and the next run continues on the exact page; a complete window stores its end date. Corrupted cursors fall back to a fresh 7-day window.
+- **Consequences:** The 5 MB limit stays untouched; no NVD change is skipped.
+
+## ADR-021 — `Accept: application/json` for JSON APIs; EPSS pacing
+
+- **Date:** 2026-11-09
+- **Context:** The live run showed FIRST EPSS answering `400 errorNotSupported` to safeFetch's feed-oriented default `Accept` list.
+- **Decision:** The runner sends `Accept: application/json` for every non-RSS adapter (GitHub adapters still add their vendor type). EPSS batches of 100 ids are also spaced 2 s apart to stay polite.
+
+## ADR-022 — `events` table as the collector → API change feed
+
+- **Date:** 2026-11-09
+- **Context:** The collector and the API are separate processes sharing SQLite; SSE (`/api/stream`) needs to learn about new items.
+- **Decision:** The collector appends `item.new`, `cve.updated` and `source.health` rows to an `events` table inside the same transaction as the data; the API tails it by id. Rows are purged after a day.
+- **Noise control:** only new high/critical CVEs published within 48 h and KEV additions dated within 7 days produce `cve.updated` events, so the initial KEV catalog sync (≈1 800 entries) and bulk NVD syncs do not flood the stream (the notifier reuses this rule in Phase 8).
+
+## ADR-023 — Scheduling details
+
+- **Date:** 2026-11-09
+- **Decision:** One croner job per enabled source, re-synced with the `sources` table every 5 minutes. Jitter is a random delay of 0–10 % of the interval after each trigger (a job can be late, never early). A new-CVE NVD run triggers an immediate EPSS run. Maintenance: purge 03:30, backup 03:00 (when `BACKUP_DIR` is set), FTS optimize + `VACUUM` Sundays 04:00.
+- **Health:** `healthy`, `slow` (run ≥ 3 s), `failing` (1–4 consecutive failures), `degraded` (≥ 5: retried at 4× the interval, at most every 6 h; first success closes the breaker).
+
+## ADR-024 — Collector dependencies
+
+- **Date:** 2026-11-09
+- **Decision:** `croner` (0 deps, cron scheduling, imposed by the spec), `pino` (the logger Fastify uses; secrets redacted by path), plus `zod` and `drizzle-orm` at the same exact versions as the packages that already use them.

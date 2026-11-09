@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Example Security News</title>
+    <link>https://news.example.com/</link>
+    <item>
+      <title>Critical PHP flaw CVE-2026-41234 exploited in the wild</title>
+      <link>https://news.example.com/2026/11/php-flaw?utm_source=rss</link>
+      <description>&lt;p&gt;Attackers exploit &lt;b&gt;CVE-2026-41234&lt;/b&gt; &amp;amp; more.&lt;/p&gt;&lt;script&gt;alert(1)&lt;/script&gt;</description>
+      <pubDate>Mon, 02 Nov 2026 18:00:00 GMT</pubDate>
+      <dc:creator>Jane Doe</dc:creator>
+      <guid isPermaLink="false">news-1</guid>
+    </item>
+    <item>
+      <title><![CDATA[Small open models now summarise the news <em>offline</em>]]></title>
+      <link>https://news.example.com/2026/11/open-models</link>
+      <content:encoded><![CDATA[<p>A neutral sample paragraph.</p>]]></content:encoded>
+      <pubDate>Mon, 02 Nov 2026 16:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>&lt;script&gt;alert(1)&lt;/script&gt;Evil title</title>
+      <link>javascript:alert(1)</link>
+      <description>Should be dropped: unsafe link.</description>
+      <pubDate>Mon, 02 Nov 2026 15:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Item with a broken date</title>
+      <link>https://news.example.com/2026/11/broken-date</link>
+      <pubDate>not a date</pubDate>
+    </item>
+    <item>
+      <title>   </title>
+      <link>https://news.example.com/2026/11/empty</link>
+    </item>
+  </channel>
+</rss>

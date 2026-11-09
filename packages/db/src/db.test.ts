@@ -265,6 +265,14 @@ describe('purgeExpired', () => {
       ])
       .run();
 
+    handle.db
+      .insert(schema.events)
+      .values([
+        { type: 'item.new', payloadJson: {}, createdAt: daysAgo(2) },
+        { type: 'item.new', payloadJson: {}, createdAt: now },
+      ])
+      .run();
+
     expect(purgeExpired(handle.db, now)).toEqual({
       items: 1,
       cves: 1,
@@ -272,6 +280,7 @@ describe('purgeExpired', () => {
       alertsSent: 1,
       repoStars: 0,
       sessions: 1,
+      events: 1,
     });
     expect(
       handle.db
