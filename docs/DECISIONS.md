@@ -333,3 +333,14 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
 - **Context:** The first run of the Docker stack failed `/api/auth/setup` with `database is locked` within 110 ms, despite `busy_timeout = 5000`. The API and the collector write the same WAL database. A deferred transaction (`BEGIN`) that reads and then writes after the other process committed cannot upgrade its snapshot, and SQLite returns `SQLITE_BUSY` at once without calling the busy handler. The single-process tests could not show it.
 - **Decision:** Every Drizzle transaction passes `{ behavior: 'immediate' }`, so it takes the write lock at `BEGIN` and waits up to `busy_timeout` for the other writer. A source test fails if a `.transaction(` call lacks it. Single statements outside transactions already wait through `busy_timeout`.
 - **Also:** the Playwright suite can target a deployed stack (`PANEL_E2E_URL`, `PANEL_E2E_SETUP_TOKEN`), which is how this was found. The custom-source test is skipped there because it needs the fake network.
+
+## ADR-045 — Local server mode on Windows
+
+- **Date:** 2026-11-09
+- **Context:** The owner runs Panel on their Windows PC instead of the home-lab server, and wants a desktop icon that starts it.
+- **Decision:**
+  - Same hardened Compose stack, run by Docker Engine inside WSL 2 (Ubuntu packages, no Docker Desktop), built from a dedicated clone (`PANEL_VERSION=local`). `deploy/scripts/local.sh` wraps start, stop, update, backup and the first-run token.
+  - A PowerShell launcher (`deploy/windows/panel.ps1`) behind a desktop shortcut keeps WSL awake with a hidden idle process. Without it, WSL stops its VM when no Windows-side process remains, and the stack with it. The launcher starts and waits for the stack, takes a daily backup to `Documents`, handles the first run and opens the browser. The shortcut uses `-ExecutionPolicy Bypass` for that process only; no system setting changes.
+  - The icon is drawn at install time from the shapes of `icon.svg` (System.Drawing, PNG-in-ICO), so no binary is committed.
+  - TLS stays on (Caddy's local CA, `__Host-` cookie, HSTS). Trusting that CA is left to the owner (`trust-certificate.ps1`, current-user store, with a Windows confirmation).
+  - `PANEL_BIND_ADDR=127.0.0.1`: WSL forwards it to Windows' localhost only, so Panel is not reachable from the network.

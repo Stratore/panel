@@ -25,6 +25,39 @@ Until release images exist on GHCR (Phase 10), build them on the server instead:
 docker compose -f compose.yaml -f compose.build.yaml up -d --build --wait
 ```
 
+## Local server on Windows (WSL)
+
+Panel can run on the Windows PC itself, reachable only from it at `https://localhost`, with a
+desktop icon that starts it and opens the browser.
+
+1. WSL 2 with Ubuntu and systemd (the default on current WSL). In Ubuntu, as root
+   (`wsl -d Ubuntu -u root`): `apt install docker.io docker-compose-v2 docker-buildx` and
+   `systemctl enable --now docker`.
+2. In Ubuntu: `git clone https://github.com/Stratore/panel.git ~/panel`, then
+   `cp ~/panel/.env.example ~/panel/deploy/.env && chmod 600 ~/panel/deploy/.env` and set
+   `PANEL_HOST=localhost`, `PANEL_PUBLIC_URL=https://localhost`, `PANEL_BIND_ADDR=127.0.0.1`,
+   `PANEL_VERSION=local`, a `SESSION_SECRET` (`openssl rand -hex 32`) and a `SETUP_TOKEN`
+   (`openssl rand -hex 16`).
+3. In Windows, from a checkout of the repository:
+   `powershell -ExecutionPolicy Bypass -File deploy\windows\install.ps1`.
+
+The installer puts the launcher in `%LOCALAPPDATA%\Panel` and creates the **Panel** icon on the
+desktop, plus Start-menu entries to stop, update and back up. The icon:
+
+- keeps WSL running with a hidden idle process (WSL otherwise shuts its virtual machine down a
+  few seconds after the last Windows-side process, which would stop Panel);
+- builds the images on the first start, then starts the stack and waits until it is healthy
+  (`deploy/scripts/local.sh start`);
+- copies a backup to `Documents\Panel\sauvegardes` at most once a day (14 kept), so the data
+  survives the loss of the WSL distribution;
+- on the first start, copies the setup token to the clipboard and opens `/setup`;
+- then opens `https://localhost`.
+
+Ports 80 and 443 are bound to 127.0.0.1 inside WSL and forwarded to Windows' `localhost` only:
+other devices on the network cannot reach Panel. The certificate comes from Caddy's local
+authority; to remove the browser warning, run `deploy\windows\trust-certificate.ps1` yourself
+(it adds that authority to your Windows account's trusted roots after a Windows confirmation).
+
 ## TLS
 
 - **Caddy internal CA (default, `PANEL_TLS=internal`).** Caddy issues a certificate for
