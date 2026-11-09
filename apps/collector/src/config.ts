@@ -14,6 +14,7 @@ const envSchema = z.object({
   SOURCES_PATH: z.string().min(1).default('./config/sources.default.json'),
   KEYWORDS_PATH: z.string().min(1).default('./config/keywords.json'),
   BACKUP_DIR: optionalSecret,
+  HEARTBEAT_FILE: optionalSecret,
   NVD_API_KEY: optionalSecret,
   GITHUB_TOKEN: optionalSecret,
   DISCORD_WEBHOOK_URL: optionalSecret,
@@ -41,6 +42,8 @@ export interface CollectorConfig {
   sourcesPath: string;
   keywordsPath: string;
   backupDir: string | undefined;
+  /** Touched every minute; the container healthcheck reads its age. */
+  heartbeatFile: string | undefined;
   secrets: { nvdApiKey: string | undefined; githubToken: string | undefined };
   /** Notifier channels (SPEC § 7.10); never logged. */
   alertSecrets: ChannelSecrets;
@@ -63,6 +66,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): CollectorConfi
     sourcesPath: resolve(parsed.SOURCES_PATH),
     keywordsPath: resolve(parsed.KEYWORDS_PATH),
     backupDir: parsed.BACKUP_DIR === undefined ? undefined : resolve(parsed.BACKUP_DIR),
+    heartbeatFile: parsed.HEARTBEAT_FILE === undefined ? undefined : resolve(parsed.HEARTBEAT_FILE),
     secrets: { nvdApiKey: parsed.NVD_API_KEY, githubToken: parsed.GITHUB_TOKEN },
     alertSecrets: {
       discordWebhookUrl: parsed.DISCORD_WEBHOOK_URL,

@@ -302,3 +302,27 @@ Short ADRs. Each entry: context, decision, consequences. Newest at the bottom.
   - External text first loses control, bidi and invisible format characters and newlines (the notifier builds every line), then is truncated on grapheme clusters.
   - Discord: every markdown character is backslash-escaped, `@` gets a zero-width space, and `allowed_mentions: { parse: [] }` is always sent; text sits in an embed (no `content`).
   - Telegram: `parse_mode: "HTML"`, with `& < > "` escaped in every external string, including link targets. `disable_web_page_preview` and `link_preview_options.is_disabled` are both set. Escaped text is never cut: lines are dropped whole to stay under the limits.
+
+## ADR-041 — The API joins the egress network
+
+- **Date:** 2026-11-09
+- **Context:** SPEC § 9.6 keeps the API on the internal network only, but two of its features call the internet: "Test feed" (custom source validation, SPEC § 4.3 D) and "Send a test alert" (SPEC § 7.10).
+- **Decision:** The API is on `internal` and `egress`. Every outbound call it makes goes through `safeFetch`: pinned DNS, public addresses only, so the Docker networks (172.16/12, 192.168/16) and the host stay unreachable. It still publishes no port; only Caddy does.
+- **Consequences:** A compromised API process could reach the internet, as the collector can. Accepted: the alternative is removing two features of the spec.
+
+## ADR-042 — Container images
+
+- **Date:** 2026-11-09
+- **Decision:**
+  - One multi-stage `deploy/docker/Dockerfile` with three targets (`api`, `collector`, `web`) sharing the build stage. `pnpm deploy --prod --legacy` produces self-contained app folders; the build fails if `better-sqlite3` or Argon2 cannot load on the target platform.
+  - API and collector run on `gcr.io/distroless/nodejs26-debian13` (no shell, no package manager), user `10001:10001`, code owned by root. Base images are pinned by digest.
+  - Caddy: the official Alpine image, run as `10001:10001`. Distroless static would have no client for the healthcheck. Instead of `CAP_NET_BIND_SERVICE` (ignored under `no-new-privileges`), compose sets the namespaced sysctl `net.ipv4.ip_unprivileged_port_start=0`, so ports 80/443 bind without any capability and HTTPS redirects need no port rewriting.
+  - The Caddy security headers are generated at build time from `SECURITY_HEADERS` (`caddyHeadersSnippet`), so Caddy, the API and the preview server cannot drift. Values that could break out of a Caddyfile string are refused.
+  - Health: the API answers `/api/health/live`; the collector touches `/tmp/collector.alive` every minute (`HEARTBEAT_FILE`); Caddy answers `127.0.0.1:2080/health`. Distroless healthchecks run a small Node script (`deploy/docker/healthcheck.mjs`).
+  - The collector waits for a healthy API, so only one process applies migrations.
+  - `compose.yaml` only references images; `compose.build.yaml` adds the build sections for CI and for servers that build from source.
+
+## ADR-043 — Deployment checks in CI on both architectures
+
+- **Date:** 2026-11-09
+- **Decision:** A `docker` CI job builds the three images, starts the stack with throw-away secrets and runs `deploy/scripts/check.sh` on GitHub-hosted `ubuntu-24.04` (amd64) and `ubuntu-24.04-arm` (arm64) runners. The check covers user, read-only root, capabilities, `no-new-privileges`, limits, health, published ports, database file mode, HTTP→HTTPS, headers and the 401 without a session. The same script runs on the server after a deployment. No self-hosted runner is involved.

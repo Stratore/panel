@@ -44,3 +44,28 @@ export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   'Cross-Origin-Opener-Policy': 'same-origin',
   'Cross-Origin-Resource-Policy': 'same-origin',
 };
+
+/**
+ * The same headers as a Caddyfile snippet, generated at image build time so Caddy can never
+ * drift from the API and the preview server (`deploy/scripts/caddy-headers.mjs`).
+ */
+export function caddyHeadersSnippet(
+  headers: Readonly<Record<string, string>> = SECURITY_HEADERS,
+): string {
+  const lines = Object.entries(headers).map(([name, value]) => {
+    if (!/^[A-Za-z-]+$/.test(name) || /["\\{}\r\n]/.test(value)) {
+      throw new Error(`Header ${name} cannot be written to a Caddyfile`);
+    }
+    return `\t\t${name} "${value}"`;
+  });
+  return [
+    '# Generated from packages/shared/src/csp.ts. Do not edit.',
+    '(security_headers) {',
+    '\theader {',
+    ...lines,
+    '\t\t-Server',
+    '\t}',
+    '}',
+    '',
+  ].join('\n');
+}

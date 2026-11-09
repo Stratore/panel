@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cspHeader, SECURITY_HEADERS, TRUSTED_TYPES_POLICY } from './csp.js';
+import { caddyHeadersSnippet, cspHeader, SECURITY_HEADERS, TRUSTED_TYPES_POLICY } from './csp.js';
 
 describe('CSP', () => {
   const csp = cspHeader();
@@ -30,5 +30,22 @@ describe('CSP', () => {
       'Referrer-Policy': 'no-referrer',
       'Strict-Transport-Security': 'max-age=63072000; includeSubDomains',
     });
+  });
+});
+
+describe('Caddy snippet', () => {
+  it('contains every security header, quoted, and removes the Server header', () => {
+    const snippet = caddyHeadersSnippet();
+    expect(snippet.startsWith('# Generated')).toBe(true);
+    expect(snippet).toContain('(security_headers) {');
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+      expect(snippet).toContain(`\t\t${name} "${value}"`);
+    }
+    expect(snippet).toContain('\t\t-Server');
+  });
+
+  it('refuses values that would break out of the Caddyfile string', () => {
+    expect(() => caddyHeadersSnippet({ 'X-Test': 'a" }\nimport evil' })).toThrow();
+    expect(() => caddyHeadersSnippet({ 'X Bad': 'v' })).toThrow();
   });
 });

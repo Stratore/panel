@@ -1,0 +1,135 @@
+# Panel on Docker Compose (SPEC § 9.6). Configuration comes from `.env` next to this file
+# (copy ../.env.example, `chmod 600 .env`). Images are pulled from GHCR; to build them locally
+# instead: docker compose -f compose.yaml -f compose.build.yaml up -d --build
+name: panel
+
+x-hardening: &hardening
+  read_only: true
+  user: '10001:10001'
+  cap_drop: [ALL]
+  security_opt: ['no-new-privileges:true']
+  tmpfs:
+    - /tmp:size=16m,mode=1777,noexec,nosuid,nodev
+  restart: unless-stopped
+  init: true
+  logging:
+    driver: json-file
+    options: { max-size: 10m, max-file: '3' }
+
+services:
+  api:
+    <<: *hardening
+    image: ${PANEL_IMAGE_PREFIX:-ghcr.io/stratore/panel}-api:${PANEL_VERSION:-latest}
+    # Only the variables this service needs (no NVD or GitHub token here).
+    environment:
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET must be set in .env}
+      SETUP_TOKEN: ${SETUP_TOKEN:-}
+      PANEL_PUBLIC_URL: ${PANEL_PUBLIC_URL:?PANEL_PUBLIC_URL must be set in .env}
+      TRUST_PROXY: 'true'
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      SAFE_FETCH_BLOCKED_CIDRS: ${SAFE_FETCH_BLOCKED_CIDRS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - data:/data
+    # internal: reached by Caddy only. egress: "Test feed" and "Send a test alert" (ADR-041).
+    networks: [internal, egress]
+    pids_limit: 128
+    mem_limit: 256m
+    cpus: 1.0
+    healthcheck:
+      test:
+        [
+          'CMD',
+          '/nodejs/bin/node',
+          '/app/healthcheck.mjs',
+          'http',
+          'http://127.0.0.1:3000/api/health/live',
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      start_interval: 2s
+      retries: 3
+
+  collector:
+    <<: *hardening
+    image: ${PANEL_IMAGE_PREFIX:-ghcr.io/stratore/panel}-collector:${PANEL_VERSION:-latest}
+    environment:
+      NVD_API_KEY: ${NVD_API_KEY:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      PANEL_PUBLIC_URL: ${PANEL_PUBLIC_URL:?PANEL_PUBLIC_URL must be set in .env}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      SAFE_FETCH_BLOCKED_CIDRS: ${SAFE_FETCH_BLOCKED_CIDRS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - data:/data
+      - backups:/backups
+    networks: [internal, egress]
+    # The API migrates the database first; two processes must not race on the migration.
+    depends_on:
+      api: { condition: service_healthy }
+    pids_limit: 128
+    mem_limit: 384m
+    cpus: 1.0
+    healthcheck:
+      # The collector touches this file every minute.
+      test:
+        ['CMD', '/nodejs/bin/node', '/app/healthcheck.mjs', 'file', '/tmp/collector.alive', '180']
+      interval: 60s
+      timeout: 5s
+      start_period: 60s
+      start_interval: 5s
+      retries: 3
+
+  caddy:
+    <<: *hardening
+    image: ${PANEL_IMAGE_PREFIX:-ghcr.io/stratore/panel}-web:${PANEL_VERSION:-latest}
+    environment:
+      PANEL_HOST: ${PANEL_HOST:?PANEL_HOST must be set in .env}
+      PANEL_TLS: ${PANEL_TLS:-internal}
+    # Lets the unprivileged Caddy bind 80/443 inside its own network namespace, without
+    # any capability (no-new-privileges ignores file capabilities anyway).
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0
+    # The only published ports, bound to the Tailscale IP or 127.0.0.1 (never 0.0.0.0).
+    ports:
+      - ${PANEL_BIND_ADDR:-127.0.0.1}:80:80
+      - ${PANEL_BIND_ADDR:-127.0.0.1}:443:443
+    tmpfs:
+      - /tmp:size=16m,mode=1777,noexec,nosuid,nodev
+      - /config:size=4m,mode=0700,uid=10001,gid=10001
+    volumes:
+      - caddy_data:/data
+    networks: [internal, edge]
+    depends_on:
+      api: { condition: service_healthy }
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.5
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:2080/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      start_interval: 2s
+      retries: 3
+
+networks:
+  # No route to the outside world.
+  internal:
+    internal: true
+  # Outbound HTTPS for the collector and the API (all through safeFetch).
+  egress: {}
+  # Caddy's published ports.
+  edge: {}
+
+volumes:
+  data: {}
+  backups: {}
+  caddy_data: {}

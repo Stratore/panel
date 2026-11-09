@@ -42,6 +42,49 @@ jobs:
           path: test-results/
           retention-days: 7
 
+  docker:
+    name: Docker stack (${{ matrix.arch }})
+    # GitHub-hosted runners only: never a self-hosted runner on a public repository.
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-24.04 }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: deploy
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test configuration (throw-away values)
+        run: |
+          umask 077
+          {
+            echo "PANEL_HOST=localhost"
+            echo "PANEL_BIND_ADDR=127.0.0.1"
+            echo "PANEL_PUBLIC_URL=https://localhost"
+            echo "SESSION_SECRET=$(openssl rand -hex 32)"
+            echo "SETUP_TOKEN=$(openssl rand -hex 16)"
+            echo "TZ=Europe/Paris"
+          } > .env
+      - name: Build images
+        run: docker compose -f compose.yaml -f compose.build.yaml build
+      - name: Start the stack
+        run: docker compose -f compose.yaml -f compose.build.yaml up -d --wait --wait-timeout 240
+      - name: Check hardening, headers and routing
+        run: bash scripts/check.sh
+      - name: Image sizes
+        run: docker images --format '{{.Repository}}:{{.Tag}} {{.Size}}' | grep panel
+      - if: failure()
+        run: docker compose logs --no-color --tail 200
+      - if: always()
+        run: docker compose down -v
+
   secrets:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest

@@ -1,0 +1,61 @@
+# Panel front door (SPEC § 9.2, § 9.6): TLS, security headers, static front-end, /api proxy.
+# Runs as an unprivileged user; compose lowers the unprivileged port start to 80 instead of
+# granting a capability.
+
+{
+	admin off
+	persist_config off
+	# The internal CA root stays in /data; it is never installed into a trust store from here.
+	skip_install_trust
+	log {
+		output stdout
+		format json
+	}
+	servers {
+		# HTTP/3 needs UDP 443 published; HTTP/1.1 and HTTP/2 are enough on a home network.
+		protocols h1 h2
+	}
+}
+
+# Generated at build time from packages/shared/src/csp.ts (deploy/scripts/caddy-headers.mjs).
+import /etc/caddy/headers.caddy
+
+{$PANEL_HOST} {
+	# Default: Caddy's own CA (ADR-008). See docs/DEPLOYMENT.md for Tailscale certificates.
+	tls {$PANEL_TLS:internal}
+
+	request_body {
+		max_size 2MB
+	}
+
+	# The API sets its own headers (helmet). Responses are streamed for SSE.
+	handle /api/* {
+		reverse_proxy api:3000 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		import security_headers
+		encode zstd gzip
+		root * /srv
+
+		# Hashed file names: cache forever. Everything else (the shell on every SPA route, the
+		# Service Worker, the manifest) is revalidated.
+		@hashed path /assets/*
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		@unhashed not path /assets/*
+		header @unhashed Cache-Control "no-cache"
+
+		# SPA fallback (SPEC § 10).
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# Container healthcheck, reachable from inside the container only.
+http://127.0.0.1:2080 {
+	bind 127.0.0.1
+	respond /health "ok" 200
+	respond 404
+}

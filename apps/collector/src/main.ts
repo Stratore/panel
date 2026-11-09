@@ -1,10 +1,17 @@
-import { mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Cron } from 'croner';
 import { eq } from 'drizzle-orm';
 import { pino } from 'pino';
-import { loadSourcesCatalog, migrateDatabase, openDatabase, schema, seedDatabase } from '@panel/db';
+import {
+  backupDatabase,
+  loadSourcesCatalog,
+  migrateDatabase,
+  openDatabase,
+  schema,
+  seedDatabase,
+} from '@panel/db';
 import { createChannels, runAlerts } from '@panel/notifier';
 import { safeFetch } from '@panel/safe-fetch';
 import { compileKeywords, keywordsConfigSchema, watchlistEntrySchema } from '@panel/shared';
@@ -39,6 +46,21 @@ const logger = pino({
 // eslint-disable-next-line security/detect-non-literal-fs-filename -- path from deployment config
 mkdirSync(dirname(config.databasePath), { recursive: true, mode: 0o700 });
 const handle = openDatabase(config.databasePath);
+const args = process.argv.slice(2);
+
+// `--backup`: one consistent online copy into BACKUP_DIR, then exit (deploy/scripts/backup.sh).
+// Runs before migrations and seeding so it never writes to the live database.
+if (args[0] === '--backup') {
+  if (config.backupDir === undefined) {
+    logger.error('BACKUP_DIR is not set');
+    process.exit(1);
+  }
+  const file = await backupDatabase(handle.sqlite, config.backupDir);
+  handle.close();
+  process.stdout.write(`${file}\n`);
+  process.exit(0);
+}
+
 migrateDatabase(handle.db);
 const seeded = seedDatabase(handle.db, loadSourcesCatalog(config.sourcesPath));
 logger.info({ ...seeded, database: config.databasePath }, 'database ready');
@@ -88,6 +110,17 @@ logger.info(
   { channels: alertChannels.channels.map((c) => c.name), timeZone: config.timeZone },
   'notifier ready',
 );
+/** Liveness for the container healthcheck: the scheduler loop is still turning. */
+const heartbeat = () => {
+  if (config.heartbeatFile === undefined) return;
+  try {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- path from deployment config
+    writeFileSync(config.heartbeatFile, new Date().toISOString());
+  } catch (error) {
+    logger.warn({ err: error }, 'heartbeat not written');
+  }
+};
+
 const alerts = async (): Promise<void> => {
   await runAlerts({
     db: handle.db,
@@ -121,7 +154,6 @@ async function runAll(only?: string): Promise<void> {
 // Watchlist edits and schema upgrades reach every CVE (cheap: a few seconds for ~10k rows).
 logger.info({ cves: refreshAllPriorities(handle.db, loadWatchlist()) }, 'priorities refreshed');
 
-const args = process.argv.slice(2);
 if (args[0] === '--once') {
   await runAll(args[1]);
   await alerts();
@@ -132,7 +164,11 @@ if (args[0] === '--once') {
   void runAll();
   // Every minute: new rows from any source, quiet hours ending and the digest time are all
   // picked up within a minute. `protect` skips a tick while the previous run is still going.
-  const notifier = new Cron('* * * * *', { protect: true }, alerts);
+  const notifier = new Cron('* * * * *', { protect: true }, async () => {
+    await alerts();
+    heartbeat();
+  });
+  heartbeat();
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');
     scheduler.stop();

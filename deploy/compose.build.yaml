@@ -1,0 +1,12 @@
+# Builds the images from this checkout instead of pulling them (CI, local testing):
+#   docker compose -f compose.yaml -f compose.build.yaml up -d --build --wait
+services:
+  api:
+    build: { context: .., dockerfile: deploy/docker/Dockerfile, target: api }
+    pull_policy: build
+  collector:
+    build: { context: .., dockerfile: deploy/docker/Dockerfile, target: collector }
+    pull_policy: build
+  caddy:
+    build: { context: .., dockerfile: deploy/docker/Dockerfile, target: web }
+    pull_policy: build

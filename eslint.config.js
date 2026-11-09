@@ -75,7 +75,15 @@ export default tseslint.config(
 
   // Node-side code.
   {
-    files: ['apps/api/**', 'apps/collector/**', 'packages/**', 'e2e/**', '*.js', '*.ts'],
+    files: [
+      'apps/api/**',
+      'apps/collector/**',
+      'packages/**',
+      'e2e/**',
+      'deploy/**',
+      '*.js',
+      '*.ts',
+    ],
     languageOptions: { globals: globals.node },
   },
 

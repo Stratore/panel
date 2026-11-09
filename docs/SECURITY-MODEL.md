@@ -80,3 +80,15 @@ Every outbound request goes through `packages/safe-fetch`. ESLint forbids `fetch
 | Webhook secret leak                    | Errors contain the channel and a code only; Pino redaction; values never logged                             | `channels.test.ts`                                  |
 | Webhook URL abused for SSRF            | Discord host and path allow-list; requests go through `safeFetch` (pinned DNS, IP policy, no POST redirect) | `channels.test.ts`, `fetch.test.ts` (JSON POST)     |
 | Alert flood or repeats after a restart | Per-channel dedupe keys in the database, hourly cap, lookback windows, durable queue                        | `notifier.test.ts` ("no duplicate after a restart") |
+
+## Deployment (Phase 9)
+
+| Threat                             | Control                                                                                                                | Verified by                    |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| Container escape, lateral movement | Non-root `10001:10001`, read-only root, `cap_drop: ALL`, `no-new-privileges`, distroless Node images, internal network | `deploy/scripts/check.sh` (CI) |
+| Exposure to the LAN or internet    | Only Caddy publishes ports, bound to `PANEL_BIND_ADDR`; API and collector publish nothing                              | `check.sh`                     |
+| Resource exhaustion                | PID, memory and CPU limits per container; 2 MB request bodies at Caddy; API rate limits                                | `check.sh`                     |
+| Header drift between front and API | Caddy headers generated from the shared `SECURITY_HEADERS` at build time                                               | `csp.test.ts`, `check.sh`      |
+| Secrets in images or logs          | `.dockerignore` excludes `.env`; each service receives only its own variables; `.env` mode 600 warned by `deploy.sh`   | Review, gitleaks               |
+| Supply chain                       | Base images pinned by digest, frozen lockfile, install scripts limited to the allow-list                               | Dockerfile review, Dependabot  |
+| Broken release                     | `deploy.sh` waits for health and rolls back to the previous images                                                     | Script review                  |

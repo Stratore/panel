@@ -1,0 +1,23 @@
+# Only what the image build needs; never secrets or local state.
+**/node_modules
+**/dist
+**/.tsbuild
+**/*.tsbuildinfo
+**/coverage
+.git
+.github
+.claude
+.env
+.env.*
+!.env.example
+**/*.db
+**/*.db-*
+data
+backups
+deploy/backups
+docs
+e2e
+test-results
+playwright-report
+**/__fixtures__
+**/*.test.ts
