@@ -15,6 +15,21 @@ prefs.subscribe(
   { immediate: false },
 );
 
+/**
+ * The API did not answer at start-up and this browser was never signed in, so there is no
+ * cached data to show: the shell explains the problem instead of rendering empty views.
+ */
+export const unreachable = createStore<boolean>(false);
+
+/** Whether this browser has signed in before (cleared on logout or an expired session). */
+export function signedInBefore(): boolean {
+  return readCache<boolean>('signed-in')?.value === true;
+}
+
+export function rememberSignedIn(value: boolean): void {
+  writeCache('signed-in', value);
+}
+
 /** Global Pause (WCAG 2.2.2): stops tickers, rotations and loops. */
 export const paused = createStore<boolean>(false);
 

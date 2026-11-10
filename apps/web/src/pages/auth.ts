@@ -26,7 +26,12 @@ function header(title: string, intro?: string): HTMLElement {
       logoMark(),
       h('span', { class: 'pn-logo__word', text: 'Panel' }),
     ),
-    h('h1', { class: 'auth__title', text: title, style: { 'margin-top': '18px' } }),
+    h('h1', {
+      class: 'auth__title',
+      attrs: { id: 'auth-title' },
+      text: title,
+      style: { 'margin-top': '18px' },
+    }),
     intro === undefined
       ? null
       : h('p', { class: 'sub', text: intro, style: { 'margin-top': '8px' } }),
@@ -239,4 +244,34 @@ export function setupPage(): HTMLElement {
     token.focus();
   });
   return h('main', { class: 'auth', attrs: { id: 'main' } }, form);
+}
+
+/** Start-up without an answer from the API and nothing cached to show (see app-context boot). */
+export function unreachablePage(): HTMLElement {
+  const retry = h('button', {
+    class: 'btn',
+    attrs: { type: 'button' },
+    text: t('unreachable.retry'),
+    on: {
+      click: () => {
+        location.reload();
+      },
+    },
+  });
+  return h(
+    'main',
+    { class: 'auth', attrs: { id: 'main' } },
+    h(
+      'section',
+      { class: 'box auth__card', attrs: { 'aria-labelledby': 'auth-title' } },
+      header(t('unreachable.title'), t('unreachable.intro')),
+      h(
+        'ul',
+        { class: 'auth__hints' },
+        h('li', { text: t('unreachable.running') }),
+        h('li', { text: t('unreachable.certificate') }),
+      ),
+      retry,
+    ),
+  );
 }

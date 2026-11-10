@@ -291,5 +291,10 @@
   "common.open": "Open",
   "common.externalLink": "{label} (opens in a new tab)",
   "common.copy": "Copied",
-  "common.seeAll": "See all"
+  "common.seeAll": "See all",
+  "unreachable.title": "Panel can’t reach its server",
+  "unreachable.intro": "This page loaded, but the Panel server did not answer.",
+  "unreachable.running": "Check that Panel is running (the desktop icon on Windows, or docker compose ps on a server).",
+  "unreachable.certificate": "If the browser warned about the certificate, it may be refusing Panel’s new local certificate: trust it (Panel - Certificat on Windows), restart the browser, then try again.",
+  "unreachable.retry": "Try again"
 }

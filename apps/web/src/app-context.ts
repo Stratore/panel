@@ -3,7 +3,14 @@ import { clearCache } from './lib/cache.js';
 import { lang } from './lib/i18n.js';
 import { createRouter } from './lib/router.js';
 import { connectStream, type StreamEvent } from './lib/sse.js';
-import { isDemo, prefs, session } from './lib/state.js';
+import {
+  isDemo,
+  prefs,
+  rememberSignedIn,
+  session,
+  signedInBefore,
+  unreachable,
+} from './lib/state.js';
 import type { Prefs } from '@panel/shared';
 
 /** Singletons shared by components and pages. */
@@ -31,6 +38,7 @@ function stopStream(): void {
 
 setUnauthorizedHandler(() => {
   stopStream();
+  rememberSignedIn(false);
   session.set({ authenticated: false, setupRequired: false });
   router.navigate('/login', { replace: true });
 });
@@ -38,6 +46,7 @@ setUnauthorizedHandler(() => {
 /** Loads what an authenticated session needs: preferences, then the live stream. */
 export async function afterLogin(): Promise<void> {
   session.set({ authenticated: true, setupRequired: false });
+  rememberSignedIn(true);
   const loaded = await api.prefs();
   prefs.set(loaded.prefs);
   startStream();
@@ -53,8 +62,14 @@ export async function boot(): Promise<void> {
     session.set(current);
     if (current.authenticated) await afterLogin();
   } catch {
-    // Offline or API down: keep the cached preferences and let views show cached data.
-    session.set({ authenticated: true, setupRequired: false });
+    if (signedInBefore()) {
+      // Offline or API down after a previous sign-in: show the cached data with the banner.
+      session.set({ authenticated: true, setupRequired: false });
+    } else {
+      // Nothing cached to show (first visit, wiped instance, refused certificate): say so.
+      unreachable.set(true);
+      session.set({ authenticated: false, setupRequired: false });
+    }
   }
 }
 

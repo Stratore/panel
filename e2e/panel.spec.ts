@@ -41,6 +41,17 @@ async function audit(page: Page): Promise<void> {
 
 test.use({ reducedMotion: 'reduce' });
 
+test('an unreachable server is explained, not shown as an empty Journal', async ({ page }) => {
+  // A browser that never signed in has nothing cached: no fake "offline" Journal.
+  await page.route('**/api/**', (route) => route.abort('connectionrefused'));
+  await page.goto('/');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Panel can’t reach its server' }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  await audit(page);
+});
+
 test('first run: setup creates the account and opens the Journal', async ({ page }) => {
   const violations = await watchViolations(page);
   await page.goto('/');

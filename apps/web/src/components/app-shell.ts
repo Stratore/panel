@@ -4,9 +4,9 @@ import { registerStaleIndicator } from '../lib/data.js';
 import { h, mount } from '../lib/h.js';
 import { lang, t } from '../lib/i18n.js';
 import type { Route } from '../lib/router.js';
-import { isDemo, online, paused, prefs, session } from '../lib/state.js';
+import { isDemo, online, paused, prefs, session, unreachable } from '../lib/state.js';
 import { applyMotion, applyTheme, prefersReducedMotion } from '../lib/theme.js';
-import { loginPage, setupPage } from '../pages/auth.js';
+import { loginPage, setupPage, unreachablePage } from '../pages/auth.js';
 import { PAGE_TITLES, renderPage } from '../pages/index.js';
 import { skeleton } from './states.js';
 
@@ -98,6 +98,13 @@ export class PnAppShell extends HTMLElement {
   private render(route: Route): void {
     const current = session.get();
     if (current === null) return;
+
+    if (unreachable.get()) {
+      document.title = 'Panel';
+      this.main = null;
+      mount(this, unreachablePage());
+      return;
+    }
 
     const redirect = guard(current, route);
     if (redirect !== null) {

@@ -428,6 +428,15 @@ p {
   letter-spacing: -0.03em;
 }
 
+.auth__hints {
+  display: grid;
+  gap: 10px;
+  padding-left: 20px;
+  color: var(--sub);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
 /* --- Shared states ---------------------------------------------------------------------- */
 
 .skeleton {

@@ -291,5 +291,10 @@
   "common.open": "Ouvrir",
   "common.externalLink": "{label} (nouvel onglet)",
   "common.copy": "Copié",
-  "common.seeAll": "Tout voir"
+  "common.seeAll": "Tout voir",
+  "unreachable.title": "Panel ne joint pas son serveur",
+  "unreachable.intro": "Cette page s’est chargée, mais le serveur de Panel n’a pas répondu.",
+  "unreachable.running": "Vérifie que Panel est démarré (l’icône du bureau sous Windows, ou docker compose ps sur un serveur).",
+  "unreachable.certificate": "Si le navigateur a signalé le certificat, il refuse peut-être le nouveau certificat local de Panel : fais-lui confiance (Panel - Certificat sous Windows), redémarre le navigateur, puis réessaie.",
+  "unreachable.retry": "Réessayer"
 }
