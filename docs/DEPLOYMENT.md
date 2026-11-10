@@ -41,7 +41,7 @@ desktop icon that starts it and opens the browser.
 3. In Windows, from a checkout of the repository:
    `powershell -ExecutionPolicy Bypass -File deploy\windows\install.ps1`.
 
-The installer puts the launcher in `%LOCALAPPDATA%\Panel` and creates the **Panel** icon on the
+The installer puts the launcher in `%USERPROFILE%\Panel` and creates the **Panel** icon on the
 desktop, plus Start-menu entries to stop, update and back up. The icon:
 
 - keeps WSL running with a hidden idle process (WSL otherwise shuts its virtual machine down a

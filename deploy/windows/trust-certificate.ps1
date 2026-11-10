@@ -17,7 +17,8 @@ $ErrorActionPreference = 'Continue'
 $Host.UI.RawUI.WindowTitle = 'Panel - certificat'
 
 try {
-  $folder = Join-Path $env:LOCALAPPDATA 'Panel'
+  # Installed next to panel.ps1 and panel.json by install.ps1.
+  $folder = $PSScriptRoot
   $config = Get-Content -ErrorAction Stop -Raw -Path (Join-Path $folder 'panel.json') | ConvertFrom-Json -ErrorAction Stop
   # A long path: WSL cannot open Windows 8.3 short names such as PUGET_~1.
   $certificate = Join-Path $folder 'panel-root.crt'

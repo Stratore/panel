@@ -4,7 +4,7 @@
   Prérequis : WSL avec une distribution Linux, Docker Engine dedans, et ce dépôt cloné dans la
   distribution avec un fichier deploy/.env (voir docs/DEPLOYMENT.md, « Serveur local Windows »).
 
-  Crée dans %LOCALAPPDATA%\Panel le lanceur, sa configuration et l'icône, puis les raccourcis
+  Crée dans %USERPROFILE%\Panel le lanceur, sa configuration et l'icône, puis les raccourcis
   « Panel » sur le bureau et dans le menu Démarrer.
     powershell -ExecutionPolicy Bypass -File deploy\windows\install.ps1 [-Distro Ubuntu] [-DeployDir /home/moi/panel/deploy]
 #>
@@ -29,7 +29,9 @@ if ($LASTEXITCODE -ne 0) {
   throw "Pas de compose.yaml, .env ou scripts/local.sh dans $DeployDir ($Distro)."
 }
 
-$target = Join-Path $env:LOCALAPPDATA 'Panel'
+# Not under AppData\Local: a packaged app (and every tool it runs) sees a private, redirected
+# copy of it, so shortcuts created from there pointed to files Windows itself could not see.
+$target = Join-Path $env:USERPROFILE 'Panel'
 $backupDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Panel\sauvegardes'
 New-Item -ItemType Directory -Force -Path $target, $backupDir | Out-Null
 $backupDirWsl = (& wsl.exe -d $Distro -- wslpath -a ($backupDir -replace '\\', '/') | Out-String).Trim()
